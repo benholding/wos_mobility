@@ -3,10 +3,10 @@ source("1. importing data.R") #importing data and packages-.
 
 #STEP ONE#
 #identifying the three key datasets...
-#1. eu_univ_1176_eligible_researchers - SHOULD BE (but actually isn't, because some authors had >1 affilation at scientific birth) one row for each author, showing name, city, country, gender etc
+#1. author_info_per_publication - SHOULD BE (but actually isn't, because some authors had >1 affilation at scientific birth) one row for each author, showing name, city, country, gender etc
 #the way to solve the duplication problem is either to take researchers with...
 
-one_institution_authors <- eu_univ_1176_eligible_researchers %>% #one institution# (this is the one I'm using generally)
+one_institution_authors <- author_info_per_publication %>% #one institution# (this is the one I'm using generally)
   group_by(cluster_id) %>% 
   mutate(nrow = n()) %>% 
   filter(nrow == 1) %>% 
