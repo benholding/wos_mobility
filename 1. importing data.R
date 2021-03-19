@@ -49,9 +49,23 @@ author_info_per_publication <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ J
   mutate(is_first_year = if_else(pub_year == min(pub_year),1,0)) %>%
   group_by(cluster_id, pub_year) %>% 
   mutate(is_earliest_timepoint = if_else(is_first_year == 0, 0,
-                                if_else(months_numeric == min(months_numeric, na.rm=T),1,0))) %>% 
+                                if_else(months_numeric == min(months_numeric, na.rm=T),1,0)),
+         months_numeric_null_is_min_of_year = if_else(is.na(months_numeric) == F,  months_numeric, min(months_numeric, na.rm=T)),
+         months_numeric_null_is_min_of_year = if_else(is.infinite(months_numeric_null_is_min_of_year) == T, 1, months_numeric_null_is_min_of_year)) %>% 
   ungroup() 
   
+assessing_publication_order <- 
+  author_info_per_publication %>% 
+  distinct(cluster_id, ut, .keep_all= T) %>% 
+  arrange(cluster_id, pub_year, months_numeric_null_is_min_of_year) %>% 
+  distinct(cluster_id, pub_year, months_numeric_null_is_min_of_year) %>% 
+  group_by(cluster_id) %>% 
+  mutate(order_of_publishing = row_number())
+
+author_info_per_publication2 <- author_info_per_publication %>% 
+  left_join(assessing_publication_order, by = c("cluster_id", "pub_year", "months_numeric_null_is_min_of_year")) %>% 
+  arrange(cluster_id, pub_year, months_numeric_null_is_min_of_year)
+   
 publication_info <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/univ-1176-pub-vars-left-join.txt", 
                                "\t", escape_double = FALSE, trim_ws = TRUE)
 
