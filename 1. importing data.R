@@ -18,7 +18,7 @@ names(months) <- c("JAN","JAN-FEB", "FEB", "FEB-MAR", "MAR","MAR-APR", "APR","AP
 #   filter(is_min_month == 1 | is.na(is_min_month), #only keeping in rows where it is the first year and either 1. it is the earliest month or 2. we had missing data for month
 #          pub_org == lr_univ_id) #only keeping rows where pub_org is the same as lr_univ_id. i.e. affilation is in leiden ranking
 # 
-# unique_cluster_ids_original <- original %>% distinct(cluster_id) # getting distinct cluster IDS
+# unique_cluster_ids_original <- original %>% distinct(cluster_id) # getting distinct cluster IDs
 
 # new <- eu_univ_1176_eligible_researchers %>%
 #   filter(pub_doc_type_id == 1 | pub_doc_type_id == 2) %>% #only including type 1 or type 2 articles
@@ -42,7 +42,7 @@ names(months) <- c("JAN","JAN-FEB", "FEB", "FEB-MAR", "MAR","MAR-APR", "APR","AP
 #### then once we took all publications for our eligible researchers: ####
 ##############################################################################
 
-author_info_per_publication <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/univ-1176-pubs-left-join.txt", 
+univ_1176_pubs_left_join <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/univ-1176-pubs-left-join.txt", 
                                           "\t", escape_double = FALSE, trim_ws = TRUE) %>% 
   mutate(months_numeric = unname(months[pub_month])) %>% 
   group_by(cluster_id) %>%
@@ -55,22 +55,28 @@ author_info_per_publication <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ J
   ungroup() 
   
 assessing_publication_order <- 
-  author_info_per_publication %>% 
+  univ_1176_pubs_left_join %>% 
   distinct(cluster_id, ut, .keep_all= T) %>% 
   arrange(cluster_id, pub_year, months_numeric_null_is_min_of_year) %>% 
-  distinct(cluster_id, pub_year, months_numeric_null_is_min_of_year) %>% 
+  distinct(cluster_id, ut, pub_year, months_numeric_null_is_min_of_year) %>% 
   group_by(cluster_id) %>% 
-  mutate(order_of_publishing = row_number())
+  mutate(order_of_publishing = row_number()) %>% 
+  group_by(cluster_id, pub_year, months_numeric_null_is_min_of_year)
 
-author_info_per_publication2 <- author_info_per_publication %>% 
-  left_join(assessing_publication_order, by = c("cluster_id", "pub_year", "months_numeric_null_is_min_of_year")) %>% 
-  arrange(cluster_id, pub_year, months_numeric_null_is_min_of_year)
+
+author_info_per_publication <- univ_1176_pubs_left_join %>% 
+  left_join(assessing_publication_order, by = c("cluster_id", "ut", "pub_year", "months_numeric_null_is_min_of_year")) %>% 
+  arrange(cluster_id, pub_year, months_numeric_null_is_min_of_year) %>% 
+  group_by(cluster_id, ut) %>% 
+  mutate(author_affilations_count_per_ut = n()) %>% 
+  group_by(cluster_id, pub_year, months_numeric_null_is_min_of_year) %>% 
+  mutate(number_of_publications_at_this_timeopoint = n_distinct(ut))
    
 publication_info <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/univ-1176-pub-vars-left-join.txt", 
                                "\t", escape_double = FALSE, trim_ws = TRUE)
 
 
-citation_all_info <- read_csv("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/merge-indicator-citvar.csv")
+citation_all_info <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/merged-indicator-citvar.txt","\t", escape_double = FALSE, trim_ws = TRUE)
 
 
 citation_3year_info <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/merge-indicator-cit3yr.txt", 
