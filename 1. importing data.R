@@ -48,10 +48,10 @@ univ_1176_pubs_left_join <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesp
   group_by(cluster_id) %>%
   mutate(is_first_year = if_else(pub_year == min(pub_year),1,0)) %>%
   group_by(cluster_id, pub_year) %>% 
-  mutate(is_earliest_timepoint = if_else(is_first_year == 0, 0,
-                                if_else(months_numeric == min(months_numeric, na.rm=T),1,0)),
-         months_numeric_null_is_min_of_year = if_else(is.na(months_numeric) == F,  months_numeric, min(months_numeric, na.rm=T)),
-         months_numeric_null_is_min_of_year = if_else(is.infinite(months_numeric_null_is_min_of_year) == T, 1, months_numeric_null_is_min_of_year)) %>% 
+  mutate(months_numeric_null_is_min_of_year = if_else(is.na(months_numeric) == F,  months_numeric, min(months_numeric, na.rm=T)),
+         months_numeric_null_is_min_of_year = if_else(is.infinite(months_numeric_null_is_min_of_year) == T, 1, months_numeric_null_is_min_of_year),
+         is_earliest_timepoint = if_else(is_first_year == 0, 0,
+                                         if_else(months_numeric_null_is_min_of_year == min(months_numeric_null_is_min_of_year, na.rm=T),1,0))) %>% 
   ungroup() 
   
 assessing_publication_order <- 

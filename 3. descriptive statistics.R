@@ -1,7 +1,7 @@
 source("2. data cleaning and maniputation.R") #importing data and packages
 
-length(unique(final_dataset$ut)) #403,236 articles
-length(unique(final_dataset$cluster_id)) #40,135 researchers
+length(unique(final_dataset$ut)) #549,869 articles
+length(unique(final_dataset$cluster_id)) #54,675 researchers
 
 #How many affilations do people have?
 table(final_dataset %>% distinct(cluster_id,ut, .keep_all = T) %>% pull(author_affilations_count_per_ut))
@@ -12,15 +12,18 @@ table(final_dataset %>% group_by(cluster_id, ut) %>% mutate(n_pubcountries_per_p
 
 #How many people move around?
 final_dataset %>% group_by(cluster_id) %>% mutate(n_distinct_pubcountries_total =n_distinct(pub_country)) %>% ungroup() %>% distinct(cluster_id, .keep_all=T) %>% count(n_distinct_pubcountries_total) #some people were affilated with 6 countries
-final_dataset %>% group_by(cluster_id) %>% mutate(n_distinct_pubcountries_total =n_distinct(pub_country)) %>% ungroup() %>% distinct(cluster_id, .keep_all=T) %>% count(n_distinct_pubcountries_total) %>% filter(n_distinct_pubcountries_total>1) %>% summarise(count_overall_movers = sum(n)) #19632
+final_dataset %>% group_by(cluster_id) %>% mutate(n_distinct_pubcountries_total =n_distinct(pub_country)) %>% ungroup() %>% distinct(cluster_id, .keep_all=T) %>% count(n_distinct_pubcountries_total) %>% filter(n_distinct_pubcountries_total>1) %>% summarise(count_overall_movers = sum(n)) #26,820
 
 #now I need to find the people who moved to the USA and it was their first move and they stayed there for a while
 movers_dataset <- 
-  final_dataset %>% 
-  arrange(cluster_id, order_of_publishing) %>% 
-  group_by(cluster_id) %>% 
-  mutate(new_country_compared_to_lag1 = if_else(pub_country != lag(pub_country), TRUE, FALSE), new_country_compared_to_lag1_is_duplicate = duplicated(new_country_compared_to_lag1), is_first_new_country = if_else(new_country_compared_to_lag1 == TRUE & new_country_compared_to_lag1_is_duplicate == FALSE, TRUE, FALSE), origin_country = min(pub_country, na.rm = T)) %>% 
-  filter(is_first_new_country == TRUE & order_of_publishing>5 & pub_country == "United States") %>% 
+  final_dataset %>% #taking the main dataset
+  arrange(cluster_id, order_of_publishing) %>% #Then I arrange the dataset, so that the order_of_publishing 1 is always first for each cluster_id 
+  group_by(cluster_id) %>% #then within each cluster ID I am going to check when people moved to a first new country
+  mutate(new_country_compared_to_lag1 = if_else(pub_country != lag(pub_country), TRUE, FALSE), #so here I compare a persons pub_country at order_of_publishing x to pub_country at time x-1. Is it changes it puts a TRUE in the column
+         new_country_compared_to_lag1_is_duplicate = duplicated(new_country_compared_to_lag1), #since we only want to see the first move, I made another column that puts a TRUE if a TRUE has already been seen for that subject in the new_country_compared_to_lag1 variable
+         is_first_new_country = if_else(new_country_compared_to_lag1 == TRUE & new_country_compared_to_lag1_is_duplicate == FALSE, TRUE, FALSE), #then using the two previous variables, I make a final variable that shows the publication where a first move was made
+         origin_country = first(pub_country)) %>% #this is nothing to do with the above 3 lines. I just wanted to add a variable that states what the origin country is for each cluster_ID
+  filter(is_first_new_country == TRUE & order_of_publishing>3 & pub_country == "United States") %>% 
   select(cluster_id, origin_country, move_to_USA_publication_order = order_of_publishing, move_to_USA_year = pub_year, move_to_USA_month = months_numeric_null_is_min_of_year) %>% 
   left_join(final_dataset, by = "cluster_id") %>% 
   filter(order_of_publishing == move_to_USA_publication_order) %>% 
@@ -45,6 +48,9 @@ movers_dataset <-
   select(cluster_id, origin_country,USA_institution, USA_lr_univ_id, move_to_USA_publication_order,move_to_USA_year, move_to_USA_month, final_article_at_destination_publication_order = order_of_publishing,final_article_at_destination_year = pub_year,final_article_at_destination_month = months_numeric_null_is_min_of_year) %>% 
   left_join(final_dataset, by = "cluster_id") %>% 
   arrange(cluster_id, order_of_publishing)
+
+#how many eligible movers to USA do have?
+length(unique(movers_dataset$cluster_id)) #557
   
 #where are our researchers coming from?
 table(movers_dataset %>% distinct(cluster_id, .keep_all = T) %>% pull(origin_country))
