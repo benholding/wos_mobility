@@ -1,207 +1,196 @@
 source("2. data cleaning and maniputation.R") #importing data and packages
 
-length(unique(final_dataset$ut)) #1,217,055 articles
-length(unique(final_dataset$cluster_id)) #122,933 researchers
+##########################################
+#### basic demographics about the whole dataset ####
+
+length(unique(final_complete_dataset$ut)) #1,217,055 articles
+length(unique(final_complete_dataset$cluster_id)) #122,933 researchers
 
 #How many affilations do people have?
-table(final_dataset %>% distinct(cluster_id,ut, .keep_all = T) %>% pull(author_affilations_count_per_ut))
-hist(final_dataset %>% distinct(cluster_id,ut, .keep_all = T) %>% pull(author_affilations_count_per_ut), 30)
+table(final_complete_dataset %>% distinct(cluster_id,ut, .keep_all = T) %>% pull(author_affilations_count_per_ut))
+hist(final_complete_dataset %>% distinct(cluster_id,ut, .keep_all = T) %>% pull(author_affilations_count_per_ut), 30)
 
 #Number of countries authors are affilated in papers
-table(final_dataset %>% group_by(cluster_id, ut) %>% mutate(n_pubcountries_per_paperauthor = n_distinct(lr_country_name)) %>% pull(n_pubcountries_per_paperauthor)) #Can we trust papers where authors have 3,4 or 5 countries of affilation?
+table(final_complete_dataset %>% group_by(cluster_id, ut) %>% mutate(n_pubcountries_per_paperauthor = n_distinct(lr_country_name)) %>% pull(n_pubcountries_per_paperauthor)) #Can we trust papers where authors have 3,4 or 5 countries of affilation?
 
 #How many people move around?
-final_dataset %>% group_by(cluster_id) %>% mutate(n_distinct_pubcountries_total =n_distinct(pub_country)) %>% ungroup() %>% distinct(cluster_id, .keep_all=T) %>% count(n_distinct_pubcountries_total) #some people were affilated with 6,7,8,9 countries
-final_dataset %>% group_by(cluster_id) %>% mutate(n_distinct_pubcountries_total =n_distinct(pub_country)) %>% ungroup() %>% distinct(cluster_id, .keep_all=T) %>% count(n_distinct_pubcountries_total) %>% filter(n_distinct_pubcountries_total>1) %>% summarise(count_overall_movers = sum(n)) #61,377
+final_complete_dataset %>% group_by(cluster_id) %>% mutate(n_distinct_pubcountries_total =n_distinct(pub_country)) %>% ungroup() %>% distinct(cluster_id, .keep_all=T) %>% count(n_distinct_pubcountries_total) #some people were affilated with 6,7,8,9 countries
+final_complete_dataset %>% group_by(cluster_id) %>% mutate(n_distinct_pubcountries_total =n_distinct(pub_country)) %>% ungroup() %>% distinct(cluster_id, .keep_all=T) %>% count(n_distinct_pubcountries_total) %>% filter(n_distinct_pubcountries_total>1) %>% summarise(count_overall_movers = sum(n)) #61,377
 
-#how many people move to USA
-final_dataset %>% filter(pub_country == "United States") %>% distinct(cluster_id) %>% summarise(n_movers_to_USA=n()) #7452
-final_dataset %>% filter(lr_country_name == "United States") %>% distinct(cluster_id) %>% summarise(n_movers_to_USA=n()) #6529
+############################################################
+####looking at performance differentiation for the first 5 years#########
+############################################################
 
-
-#now I need to find the people who moved to the USA and it was their first move
-movers_to_USA_dataset <- 
-  final_dataset %>% #taking the main dataset
-  arrange(cluster_id, order_of_publishing) %>% #Then I arrange the dataset, so that the order_of_publishing 1 is always first for each cluster_id 
-  group_by(cluster_id) %>% #then within each cluster ID I am going to check when people moved to a first new country
-  mutate(new_country_compared_to_lag1 = if_else(pub_country != lag(pub_country), TRUE, FALSE), #so here I compare a persons pub_country at order_of_publishing x to pub_country at time x-1. Is it changes it puts a TRUE in the column
-         new_country_compared_to_lag1_is_duplicate = duplicated(new_country_compared_to_lag1), #since we only want to see the first move, I made another column that puts a TRUE if a TRUE has already been seen for that subject in the new_country_compared_to_lag1 variable
-         is_first_new_country = if_else(new_country_compared_to_lag1 == TRUE & new_country_compared_to_lag1_is_duplicate == FALSE, TRUE, FALSE), #then using the two previous variables, I make a final variable that shows the publication where a first move was made
-         origin_country = first(pub_country)) %>%  #this is nothing to do with the above 3 lines. I just wanted to add a variable that states what the origin country is for each cluster_ID
-  filter(is_first_new_country == TRUE & pub_country == "United States") %>% 
-  ungroup()
-
-length(unique(movers_to_USA_dataset$cluster_id)) #5752
-
-#Then I need to find the people that moved only after a specific length of time. Below I work out subgroups for those who moved at least 3, 4 or 5 years after they started
-
-movers_3_years_min <- movers_to_USA_dataset %>% 
-  group_by(cluster_id) %>% 
-  mutate(years_between_starting_and_moving = pub_year-first_year) %>% 
-  filter(years_between_starting_and_moving >= 3) %>% 
-  select(cluster_id, origin_country,first_year, move_to_USA_publication_order = order_of_publishing, move_to_USA_year = pub_year, move_to_USA_month = months_numeric_null_is_min_of_year, years_between_starting_and_moving) %>% 
-  left_join(final_dataset, by = "cluster_id")
-
-length(unique(movers_3_years_min$cluster_id)) #4398
-movers_3_years_min %>% distinct(cluster_id, .keep_all = T) %>% pull(move_to_USA_publication_order) %>% table()
-movers_3_years_min %>% distinct(cluster_id, .keep_all = T) %>% pull(move_to_USA_publication_order) %>% hist(50)
-
-# movers_4_years_min <- movers_to_USA_dataset %>% 
-#   group_by(cluster_id) %>% 
-#   mutate(years_between_starting_and_moving = pub_year-first_year) %>% 
-#   filter(years_between_starting_and_moving >= 4) %>% 
-#   select(cluster_id, origin_country,first_year, move_to_USA_publication_order = order_of_publishing, move_to_USA_year = pub_year, move_to_USA_month = months_numeric_null_is_min_of_year, years_between_starting_and_moving) %>% 
-#   left_join(final_dataset, by = "cluster_id")
-#
-# length(unique(movers_4_years_min$cluster_id)) #3345
-# movers_4_years_min %>% distinct(cluster_id, .keep_all = T) %>% pull(move_to_USA_publication_order) %>% table()
-# movers_4_years_min %>% distinct(cluster_id, .keep_all = T) %>% pull(move_to_USA_publication_order) %>% hist(50)
-# 
-# movers_5_years_min <- movers_to_USA_dataset %>% 
-#   group_by(cluster_id) %>% 
-#   mutate(years_between_starting_and_moving = pub_year-first_year) %>% 
-#   filter(years_between_starting_and_moving >= 5) %>% 
-#   select(cluster_id, origin_country,first_year, move_to_USA_publication_order = order_of_publishing, move_to_USA_year = pub_year, move_to_USA_month = months_numeric_null_is_min_of_year, years_between_starting_and_moving) %>% 
-#   left_join(final_dataset, by = "cluster_id")
-# 
-# length(unique(movers_5_years_min$cluster_id)) #2430
-# movers_5_years_min %>% distinct(cluster_id, .keep_all = T) %>% pull(move_to_USA_publication_order) %>% table()
-# movers_5_years_min %>% distinct(cluster_id, .keep_all = T) %>% pull(move_to_USA_publication_order) %>% hist(50)
-
-#next we require our movers to be at the destination for a set number of years
-
-only_usa_destination <- 
-  movers_3_years_min %>% 
-  filter(order_of_publishing == move_to_USA_publication_order) %>% 
-  group_by(cluster_id) %>% 
-  mutate(is_not_acceptable_country = if_else(pub_country != "United States", if_else(pub_country != origin_country, 1,0), 0),
-         count_of_ineligable_countries = sum(is_not_acceptable_country)) %>%
-  filter(count_of_ineligable_countries == 0) %>%  #at the point of becoming affilated with US, the only other affilations must be with origin country
-  ungroup()
-
-length(unique(only_usa_destination$cluster_id)) #4230
-
-only_usa_destination_leiden_ranked <- 
-  only_usa_destination %>% 
-  filter(lr_country_name == "United States") #there must be at least one affilation at this point with a leiden ranked institution
-  
-length(unique(only_usa_destination_leiden_ranked$cluster_id)) #3557
-
-only_usa_destination_leiden_ranked_single <- only_usa_destination_leiden_ranked %>% 
-  group_by(cluster_id) %>% 
-  mutate(n_distinct_leidenranked_USinstitues = n_distinct(lr_univ_id)) %>% 
-  filter(n_distinct_leidenranked_USinstitues == 1) #here we filter so that eligible authors must be only affilated to 1 leiden ranked institution in the USA (otherwise how do we know how good the institution is?)
-  
-length(unique(only_usa_destination_leiden_ranked_single$cluster_id)) #3506
-
-movers_dataset_3yearsmin <- only_usa_destination_leiden_ranked_single %>%   
-  distinct(cluster_id, .keep_all = T) %>%
-  select(cluster_id, origin_country, move_to_USA_publication_order,move_to_USA_year, move_to_USA_month,USA_institution = lr_univ_name, USA_lr_univ_id = lr_univ_id) %>% 
-  left_join(final_dataset, by = "cluster_id") %>%
-  distinct(cluster_id, ut, lr_univ_id, .keep_all = T) %>% 
-  mutate(is_destination_affilation = if_else(USA_lr_univ_id == lr_univ_id, 1, 0),
-         how_many_publications_at_destination_affilation = sum(is_destination_affilation, na.rm=T)) %>%
-  arrange(cluster_id, desc(order_of_publishing)) %>% 
-  filter(lr_univ_id == USA_lr_univ_id) %>% 
-  slice(1) %>% 
-  mutate(final_publication_at_destination_year = pub_year,
-         final_publication_at_destination_month = months_numeric_null_is_min_of_year,
-         years_at_destination = pub_year-move_to_USA_year) %>% 
-  filter(years_at_destination >=3) %>% 
-  select(cluster_id, origin_country,USA_institution, USA_lr_univ_id, move_to_USA_publication_order,move_to_USA_year, move_to_USA_month, final_article_at_destination_publication_order = order_of_publishing,final_article_at_destination_year = pub_year,final_article_at_destination_month = months_numeric_null_is_min_of_year, years_at_destination) %>% 
-  left_join(final_dataset, by = "cluster_id") %>% 
-  arrange(cluster_id, order_of_publishing)
-
-#how many eligible movers to USA do have?
-length(unique(movers_dataset_3yearsmin$cluster_id)) #1478
-movers_dataset_3yearsmin %>% distinct(cluster_id, .keep_all = T) %>% pull(move_to_USA_publication_order) %>% table()
-movers_dataset_3yearsmin %>% distinct(cluster_id, .keep_all = T) %>% pull(discipline) %>% table()
-table(movers_dataset_3yearsmin %>% distinct(cluster_id, .keep_all = T) %>% pull(origin_country))
-
-# movers_dataset_4yearsmin <- only_usa_destination_leiden_ranked_single %>%   
-#   distinct(cluster_id, .keep_all = T) %>%
-#   select(cluster_id, origin_country, move_to_USA_publication_order,move_to_USA_year, move_to_USA_month,USA_institution = lr_univ_name, USA_lr_univ_id = lr_univ_id) %>% 
-#   left_join(final_dataset, by = "cluster_id") %>%
-#   distinct(cluster_id, ut, lr_univ_id, .keep_all = T) %>% 
-#   mutate(is_destination_affilation = if_else(USA_lr_univ_id == lr_univ_id, 1, 0),
-#          how_many_publications_at_destination_affilation = sum(is_destination_affilation, na.rm=T)) %>%
-#   arrange(cluster_id, desc(order_of_publishing)) %>% 
-#   filter(lr_univ_id == USA_lr_univ_id) %>% 
-#   slice(1) %>% 
-#   mutate(final_publication_at_destination_year = pub_year,
-#          final_publication_at_destination_month = months_numeric_null_is_min_of_year,
-#          years_at_destination = pub_year-move_to_USA_year) %>% 
-#   filter(years_at_destination >=4) %>% 
-#   select(cluster_id, origin_country,USA_institution, USA_lr_univ_id, move_to_USA_publication_order,move_to_USA_year, move_to_USA_month, final_article_at_destination_publication_order = order_of_publishing,final_article_at_destination_year = pub_year,final_article_at_destination_month = months_numeric_null_is_min_of_year, years_at_destination) %>% 
-#   left_join(final_dataset, by = "cluster_id") %>% 
-#   arrange(cluster_id, order_of_publishing)
-# 
-# #how many eligible movers to USA do have?
-# length(unique(movers_dataset_4yearsmin$cluster_id)) #911
-
-# movers_dataset_5yearsmin <- only_usa_destination_leiden_ranked_single %>%   
-#   distinct(cluster_id, .keep_all = T) %>%
-#   select(cluster_id, origin_country, move_to_USA_publication_order,move_to_USA_year, move_to_USA_month,USA_institution = lr_univ_name, USA_lr_univ_id = lr_univ_id) %>% 
-#   left_join(final_dataset, by = "cluster_id") %>%
-#   distinct(cluster_id, ut, lr_univ_id, .keep_all = T) %>% 
-#   mutate(is_destination_affilation = if_else(USA_lr_univ_id == lr_univ_id, 1, 0),
-#          how_many_publications_at_destination_affilation = sum(is_destination_affilation, na.rm=T)) %>%
-#   arrange(cluster_id, desc(order_of_publishing)) %>% 
-#   filter(lr_univ_id == USA_lr_univ_id) %>% 
-#   slice(1) %>% 
-#   mutate(final_publication_at_destination_year = pub_year,
-#          final_publication_at_destination_month = months_numeric_null_is_min_of_year,
-#          years_at_destination = pub_year-move_to_USA_year) %>% 
-#   filter(years_at_destination >=5) %>% 
-#   select(cluster_id, origin_country,USA_institution, USA_lr_univ_id, move_to_USA_publication_order,move_to_USA_year, move_to_USA_month, final_article_at_destination_publication_order = order_of_publishing,final_article_at_destination_year = pub_year,final_article_at_destination_month = months_numeric_null_is_min_of_year, years_at_destination) %>% 
-#   left_join(final_dataset, by = "cluster_id") %>% 
-#   arrange(cluster_id, order_of_publishing)
-# 
-# #how many eligible movers to USA do have?
-# length(unique(movers_dataset_5yearsmin$cluster_id)) #528
-
-#which US institutions are visited?
-table(movers_dataset %>% distinct(cluster_id, .keep_all = T) %>% pull(USA_institution))
-
-
-#looking at differentiation before move
-
-
-x <- movers_dataset_3yearsmin %>% 
+individual_researcher_performance <- final_complete_dataset %>% 
+  select(cluster_id, ut, discipline, pub_year,order_of_publishing) %>% 
+  distinct(cluster_id, ut, .keep_all = T) %>% 
+  left_join(citation_3year_info, by ="ut") %>% 
   arrange(cluster_id, order_of_publishing) %>% 
   group_by(cluster_id) %>% 
-  mutate(scientific_year = pub_year-first(pub_year)) %>% 
-  filter(order_of_publishing < move_to_USA_publication_order) %>% 
-  group_by(cluster_id) %>% 
-  mutate(n_articles_published = n_distinct(ut)) %>% 
-  group_by(discipline, scientific_year) %>% 
-  summarise(article_published_mean = mean(n_articles_published),
-            articles_published_sd = sd(n_articles_published))
+  mutate(scientific_year = (pub_year-first(pub_year))+1,
+         n_articles_published= n_distinct(ut)) %>% 
+  group_by(cluster_id, scientific_year) %>% 
+  summarise(discipline = first(discipline),
+            year = first(pub_year),
+            p_full = sum(p_full),
+            p_frac = sum(p_frac),
+            cs_frac = sum(cs_frac),
+            ncs_frac = sum(ncs_frac),
+            p_top_prop10_frac = sum(p_top_prop10_frac),
+            njs_frac = sum(njs_frac)) %>% 
+  mutate(cum_p_full = cumsum(p_full),
+         cum_p_frac = cumsum(p_frac),
+         cum_cs_frac = cumsum(cs_frac),
+         cum_ncs_frac = cumsum(ncs_frac),
+         cum_p_top_prop10_frac = cumsum(p_top_prop10_frac),
+         cum_njs_frac = cumsum(njs_frac))
+  
+individual_researcher_performance_first5years <-   
+  individual_researcher_performance %>% 
+  filter(scientific_year <=5)
 
-y <- final_dataset %>% 
+average_researcher_performance  <- individual_researcher_performance_first5years %>% 
+  group_by(scientific_year, discipline) %>% 
+  mutate(median_cum_p_full = median(cum_p_full, na.rm = T),
+         top5percent_cum_p_full = quantile(cum_p_full, 0.95, na.rm=T),
+         median_cum_p_frac = median(cum_p_frac, na.rm = T),
+         top5percent_cum_p_frac = quantile(cum_p_frac, 0.95, na.rm=T),
+         median_cum_cs_frac = median(cum_cs_frac, na.rm = T),
+         top5percent_cum_cs_frac = quantile(cum_cs_frac, 0.95, na.rm=T),
+         median_cum_ncs_frac = median(cum_ncs_frac, na.rm = T),
+         top5percent_cum_ncs_frac = quantile(cum_ncs_frac, 0.95, na.rm=T),
+         median_cum_p_top_prop10_frac = median(cum_p_top_prop10_frac, na.rm = T),
+         top5percent_cum_p_top_prop10_frac = quantile(cum_p_top_prop10_frac, 0.95, na.rm=T),
+         median_cum_njs_frac = median(cum_njs_frac, na.rm = T),
+         top5percent_cum_njs_frac = quantile(cum_njs_frac, 0.95, na.rm=T)) %>% 
+  distinct(scientific_year, discipline, .keep_all = T) %>% 
+  select(scientific_year, discipline, median_cum_p_full:top5percent_cum_njs_frac) %>% 
+  mutate(cluster_id = "9999999") %>% 
+  arrange(discipline, scientific_year)
+
+movers_individual_researcher_performance_first5years <- 
+  movers_dataset_3yearsmin %>% 
+  distinct(cluster_id) %>% 
+  left_join(individual_researcher_performance_first5years, by = "cluster_id") %>% 
+  arrange(discipline, scientific_year)
+
+movers_average_researcher_performance <- movers_individual_researcher_performance_first5years %>% 
+  group_by(scientific_year, discipline) %>% 
+  mutate(movers_median_cum_p_full = median(cum_p_full, na.rm = T),
+         movers_top5percent_cum_p_full = quantile(cum_p_full, 0.95, na.rm=T),
+         movers_median_cum_p_frac = median(cum_p_frac, na.rm = T),
+         movers_top5percent_cum_p_frac = quantile(cum_p_frac, 0.95, na.rm=T),
+         movers_median_cum_cs_frac = median(cum_cs_frac, na.rm = T),
+         movers_top5percent_cum_cs_frac = quantile(cum_cs_frac, 0.95, na.rm=T),
+         movers_median_cum_ncs_frac = median(cum_ncs_frac, na.rm = T),
+         movers_top5percent_cum_ncs_frac = quantile(cum_ncs_frac, 0.95, na.rm=T),
+         movers_median_cum_p_top_prop10_frac = median(cum_p_top_prop10_frac, na.rm = T),
+         movers_top5percent_cum_p_top_prop10_frac = quantile(cum_p_top_prop10_frac, 0.95, na.rm=T),
+         movers_median_cum_njs_frac = median(cum_njs_frac, na.rm = T),
+         movers_top5percent_cum_njs_frac = quantile(cum_njs_frac, 0.95, na.rm=T)) %>% 
+  distinct(scientific_year, discipline, .keep_all = T) %>% 
+  select(scientific_year, discipline, movers_median_cum_p_full:movers_top5percent_cum_njs_frac) %>% 
+  mutate(cluster_id = "9999999") %>% 
+  arrange(discipline, scientific_year)
+
+plot_function_allresearchers = function (column) {
+  ggplot(individual_researcher_performance_first5years, aes_string(x="scientific_year", y = column,  group="cluster_id")) +
+    geom_line() +
+    geom_line(data = average_researcher_performance ,aes_string(y=paste0("median_",column)), size=1, color="green") +
+    geom_line(data = average_researcher_performance, aes_string(y=paste0("top5percent_",column)), size=1, color="red") +
+    facet_wrap(~discipline)
+}
+
+plot_function_movers = function (column) {
+  ggplot(movers_individual_researcher_performance_first5years, aes_string(x="scientific_year", y = column,  group="cluster_id")) +
+    geom_line() +
+    geom_line(data = movers_average_researcher_performance ,aes_string(y=paste0("movers_median_",column)), size=1, color="green") +
+    geom_line(data = movers_average_researcher_performance, aes_string(y=paste0("movers_top5percent_",column)), size=1, color="red") +
+    facet_wrap(~discipline)
+}
+
+performance_plots <- lapply(names(individual_researcher_performance_first5years)[10:15], plot_function_allresearchers)
+movers_performance_plots <- lapply(names(movers_individual_researcher_performance_first5years)[10:15], plot_function_movers)
+
+updated_plots <- list()
+updated_plots$cum_p_full <- performance_plots[[1]] + ylim(0,30) #cumulative full publication count
+updated_plots$cum_p_frac <- performance_plots[[2]] + ylim(0,6) #cumulative fractionalised publication count
+updated_plots$cum_cs_frac <- performance_plots[[3]] + ylim(0,55) #cumulative fractionalised publication count
+updated_plots$cum_ncs_frac <- performance_plots[[4]] + ylim(0,12) #cumulative fractionalised publication count
+updated_plots$cum_p_top_prop10_frac <- performance_plots[[5]] + ylim(0,2) #cumulative fractionalised publication count
+updated_plots$cum_njs_frac <- performance_plots[[6]] + ylim(0,12) #cumulative fractionalised publication count
+
+updated_plots$cum_p_full_moversonly <- movers_performance_plots[[1]] + ylim(0,30) #cumulative full publication count
+updated_plots$cum_p_frac_moversonly <- movers_performance_plots[[2]] + ylim(0,6) #cumulative fractionalised publication count
+updated_plots$cum_cs_frac_moversonly <- movers_performance_plots[[3]] + ylim(0,55) #cumulative fractionalised publication count
+updated_plots$cum_ncs_frac_moversonly <- movers_performance_plots[[4]] + ylim(0,12) #cumulative fractionalised publication count
+updated_plots$cum_p_top_prop10_frac_moversonly <- movers_performance_plots[[5]] + ylim(0,2) #cumulative fractionalised publication count
+updated_plots$cum_njs_frac_moversonly <- movers_performance_plots[[6]] + ylim(0,12) #cumulative fractionalised publication count
+
+lapply(names(updated_plots), 
+       function(x)ggsave(filename=paste0("plots/",x,".pdf"), plot=updated_plots[[x]]))
+
+
+############################################################
+####looking at performance differentiation after the move#########
+############################################################
+
+postmove_individual_researcher_performance <- movers_dataset_3yearsmin %>% 
+  select(cluster_id, ut, discipline, pub_year,order_of_publishing, move_to_USA_publication_order) %>% 
+  distinct(cluster_id, ut, .keep_all = T) %>% 
+  left_join(citation_3year_info, by ="ut") %>% 
   arrange(cluster_id, order_of_publishing) %>% 
-  group_by(cluster_id) %>% 
-  mutate(scientific_year = pub_year-first(pub_year)) %>% 
-  group_by(cluster_id) %>% 
-  mutate(n_articles_published = n_distinct(ut)) %>% 
-  group_by(discipline, scientific_year) %>% 
-  summarise(article_published_mean = mean(n_articles_published),
-            articles_published_sd = sd(n_articles_published))
+  filter(order_of_publishing >= move_to_USA_publication_order) %>% 
+  group_by(cluster_id) %>%
+  mutate(post_move_year = pub_year-first(pub_year),
+         n_articles_published_post_move= n_distinct(ut)) %>% 
+  group_by(cluster_id, post_move_year) %>% 
+  summarise(discipline = first(discipline),
+            p_full = sum(p_full),
+            p_frac = sum(p_frac),
+            cs_frac = sum(cs_frac),
+            ncs_frac = sum(ncs_frac),
+            p_top_prop10_frac = sum(p_top_prop10_frac),
+            njs_frac = sum(njs_frac)) %>% 
+  mutate(cum_p_full = cumsum(p_full),
+         cum_p_frac = cumsum(p_frac),
+         cum_cs_frac = cumsum(cs_frac),
+         cum_ncs_frac = cumsum(ncs_frac),
+         cum_p_top_prop10_frac = cumsum(p_top_prop10_frac),
+         cum_njs_frac = cumsum(njs_frac)) 
 
+postmove_individual_researcher_performance_first4years <- 
+  postmove_individual_researcher_performance %>% 
+  filter(post_move_year <=4)
 
-p<- ggplot(x, aes(x=scientific_year, y=article_published_mean, group=discipline, color=discipline)) + 
-  geom_line() +
-  geom_point()+
-  geom_errorbar(aes(ymin=article_published_mean-articles_published_sd, ymax=article_published_mean+articles_published_sd), width=.2,
-                position=position_dodge(0.05)) +
-  facet_wrap(~discipline)
+postmove_average_researcher_performance  <- postmove_individual_researcher_performance_first4years %>% 
+  group_by(post_move_year, discipline) %>% 
+  mutate(median_cum_p_full = median(cum_p_full, na.rm = T),
+         top5percent_cum_p_full = quantile(cum_p_full, 0.95, na.rm=T),
+         median_cum_p_frac = median(cum_p_frac, na.rm = T),
+         top5percent_cum_p_frac = quantile(cum_p_frac, 0.95, na.rm=T),
+         median_cum_cs_frac = median(cum_cs_frac, na.rm = T),
+         top5percent_cum_cs_frac = quantile(cum_cs_frac, 0.95, na.rm=T),
+         median_cum_ncs_frac = median(cum_ncs_frac, na.rm = T),
+         top5percent_cum_ncs_frac = quantile(cum_ncs_frac, 0.95, na.rm=T),
+         median_cum_p_top_prop10_frac = median(cum_p_top_prop10_frac, na.rm = T),
+         top5percent_cum_p_top_prop10_frac = quantile(cum_p_top_prop10_frac, 0.95, na.rm=T),
+         median_cum_njs_frac = median(cum_njs_frac, na.rm = T),
+         top5percent_cum_njs_frac = quantile(cum_njs_frac, 0.95, na.rm=T)) %>% 
+  distinct(post_move_year, discipline, .keep_all = T) %>% 
+  select(post_move_year, discipline, median_cum_p_full:top5percent_cum_njs_frac) %>% 
+  mutate(cluster_id = "9999999") %>% 
+  arrange(discipline, post_move_year)
 
-ggplot(x %>% filter(discipline != "Physics"), aes(x=scientific_year, y=article_published_mean, group=discipline, color=discipline)) + 
-  geom_line() +
-  geom_point()+
-  geom_errorbar(aes(ymin=article_published_mean-articles_published_sd, ymax=article_published_mean+articles_published_sd), width=.2,
-                position=position_dodge(0.05)) +
-  facet_wrap(~discipline)
+plot_function_movemove = function (column) {
+  ggplot(postmove_individual_researcher_performance_first4years, aes_string(x="post_move_year", y = column,  group="cluster_id")) +
+    geom_line() +
+    geom_line(data = postmove_average_researcher_performance ,aes_string(y=paste0("median_",column)), size=1, color="green") +
+    geom_line(data = postmove_average_researcher_performance, aes_string(y=paste0("top5percent_",column)), size=1, color="red") +
+    ylim(0, max(postmove_average_researcher_performance[paste0("top5percent_",column)])) +
+    facet_wrap(~discipline)
+}
 
+postmove_performance_plots <- lapply(names(postmove_individual_researcher_performance)[10:15], plot_function_movemove)
 
-
+postmove_performance_plots

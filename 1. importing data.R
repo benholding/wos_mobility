@@ -45,12 +45,15 @@ intermediatestep_publication_order <- #here I calculate the order of publication
 ## 2. "author_affilations_count_per_ut" - number of author affiliations for a given paper (i.e. how many lines did an author have with the same UT)
 
 publication_list_all <- raw_publication_list %>% 
-  left_join(assessing_publication_order, by = c("cluster_id", "ut", "pub_year", "months_numeric_null_is_min_of_year")) %>% 
+  left_join(intermediatestep_publication_order, by = c("cluster_id", "ut", "pub_year", "months_numeric_null_is_min_of_year")) %>% 
   group_by(cluster_id, ut) %>% 
   mutate(author_affilations_count_per_ut = n()) %>% #here for each combination of cluster_id and ut, i count the number of rows to assess the number of affiliations per given author for this paper
   left_join(researcher_info, by ="cluster_id") %>% #adding in our basic researcher data
   ungroup() %>% 
-  select(-affiliation_seq, -months_numeric) #removing just a couple of unused variables
+  select(-affiliation_seq, -months_numeric) %>%  #removing just a couple of unused variables
+  mutate(career_year = pub_year-first_year,
+         career_length_months = (career_year*12)+months_numeric_null_is_min_of_year)
+  
 
 #Here we have the datasets that contain detailed information about the individual articles. I.e. discipline, citations etc
 publication_info <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/univ-1176-pub-vars-left-join.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
