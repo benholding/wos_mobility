@@ -10,7 +10,7 @@ names(months) <- c("JAN","JAN-FEB", "FEB", "FEB-MAR", "MAR","MAR-APR", "APR","AP
 ### loading in data ###
 #######################
 
-#this first one is just to get author names, gender, and first/last year
+#this first one is just to get author names, gender, (and first/last year - NB: I later realised that we shouldn't use these ones from WoS as they include conference abstracts)
 researcher_info <- read_delim("~/Desktop/WoS Data from Jesper/univ-1176-elegible-researchers2.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% #this dataset was for finding eligible authors from WoS. However it has some useful info, so we extract that
   distinct(cluster_id, .keep_all = T) %>% 
   select(cluster_id, full_name, first_name, first_year, last_year, gender, gender_accuracy = accuracy)
@@ -53,7 +53,9 @@ publication_list_all <- raw_publication_list %>%
   select(-affiliation_seq, -months_numeric) %>%  #removing just a couple of unused variables %>% 
   arrange(cluster_id, pub_year, months_numeric_null_is_min_of_year) %>% 
   group_by(cluster_id) %>% 
-  mutate(career_year = pub_year-first_year,
+  mutate(first_year = min(pub_year), #this replaces the variable given by jesper since his version included conference abstracts
+         last_year = max(pub_year),
+         career_year = pub_year-first_year,
          career_length_months_at_this_pub = ((career_year*12)+months_numeric_null_is_min_of_year)-first(months_numeric_null_is_min_of_year)) %>% 
   distinct(cluster_id, ut, pub_org, .keep_all = T) %>% #I noticed there were some duplicate rows, so this is my way of removing them
   ungroup()
