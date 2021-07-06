@@ -65,8 +65,6 @@ publication_info <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/univ-
 citation_3year_info <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/merge-indicator-cit3yr.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
 citation_all_info <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/merged-indicator-citvar.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
 
-
-
 # #quick sanity check
 # table(unique(publication_info$ut) %in% unique(citation_all_info$ut)) #shows that all uts in publication_info are in citation_all_info
 # x <- publication_info %>% distinct(ut, .keep_all=T) %>% left_join(citation_all_info, by ="ut")
