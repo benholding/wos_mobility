@@ -26,37 +26,37 @@ diffindiff_data %>% distinct(cluster_id, .keep_all = T) %>% count(origin_region)
 
 
 ## running difference in difference with lm
-test_p_full <- lm(p_full_yearsum ~condition*post_move + career_year , data = diffindiff_data); summary(test_p_full); plot_model(test_p_full, type = "int")
-test_p_frac <- lm(p_frac_yearsum ~condition*post_move + career_year, data = diffindiff_data); summary(test_p_frac); plot_model(test_p_frac, type = "int")
-test_cs_frac <- lm(cs_full_yearsum ~condition*post_move + career_year, data = diffindiff_data); summary(test_cs_frac); plot_model(test_cs_frac, type = "int")
-test_ncs_frac <- lm(ncs_frac_yearsum ~condition*post_move + career_year, data = diffindiff_data); summary(test_ncs_frac); plot_model(test_ncs_frac, type = "int")
-test_p_top_prop10_frac <- lm(p_top_prop10_full_yearsum ~condition*post_move + career_year, data = diffindiff_data); summary(test_p_top_prop10_frac); plot_model(test_p_top_prop10_frac, type = "int")
-test_njs_full <- lm(njs_full_mean ~condition*post_move + career_year, data = diffindiff_data); summary(test_njs_frac); plot_model(test_njs_full, type = "int")
-test_njs_frac <- lm(njs_frac_mean ~condition*post_move + career_year, data = diffindiff_data); summary(test_njs_frac); plot_model(test_njs_frac, type = "int")
-
-# running did with fixest (see https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#323_Staggered_difference-in-differences_(Sun_and_Abraham,_2020))
-pacman::p_load(fixest)
-hist(diffindiff_data$p_full_yearsum,40)
-
-diffindiff_data_fixest <- diffindiff_data %>% 
-  mutate(moving_year = if_else(condition == "stayers", 10000, moving_year),
-         years_from_obtaining_usa_affilation = if_else(condition == "stayers", -1000, years_from_obtaining_usa_affilation)) # to run this version, we need to change the "year_treated" and the "time_to_treatment" for the control group
-
-fixest_poison = fepois(p_full_yearsum ~ i(years_from_obtaining_usa_affilation, condition_numeric, ref = c(-1, -1000)) + woman:i(years_from_obtaining_usa_affilation, condition_numeric, ref = c(-1, -1000)) | discipline + cluster_id, diffindiff_data_fixest)
-summary(fixest_poison, se = "twoway")
-iplot(fixest_poison, xlab = 'Years until move',  ref.line = -1, se = "twoway")
-
-fixest_poison_sa20 = fepois(p_full_yearsum ~ woman*sunab(moving_year, career_year)|  cluster_id + discipline, diffindiff_data_fixest)
-summary(fixest_poison_sa20, se = "twoway")
-iplot(fixest_poison_sa20, se = "twoway", xlab = 'Years until move',  ref.line = -1)
-summary(fixest_poison_sa20, agg = "att") #how to get the average treatment effect for the treated (ATT)
-
-
-iplot(list(fixest_poison, fixest_poison_sa20), sep = 0.5,  se = "twoway") #note that the x axis now has the title career_year (because it is calculating the difference between )
-legend("topleft", col = c(1, 2), pch = c(20, 15), 
-       legend = c("TWFE", "Sun & Abraham (2020)"))
-
-summary(fixest_poison_sa20, agg = "att") #how to get the average treatment effect for the treated (ATT)
+# test_p_full <- lm(p_full_yearsum ~condition*post_move + career_year , data = diffindiff_data); summary(test_p_full); plot_model(test_p_full, type = "int")
+# test_p_frac <- lm(p_frac_yearsum ~condition*post_move + career_year, data = diffindiff_data); summary(test_p_frac); plot_model(test_p_frac, type = "int")
+# test_cs_frac <- lm(cs_full_yearsum ~condition*post_move + career_year, data = diffindiff_data); summary(test_cs_frac); plot_model(test_cs_frac, type = "int")
+# test_ncs_frac <- lm(ncs_frac_yearsum ~condition*post_move + career_year, data = diffindiff_data); summary(test_ncs_frac); plot_model(test_ncs_frac, type = "int")
+# test_p_top_prop10_frac <- lm(p_top_prop10_full_yearsum ~condition*post_move + career_year, data = diffindiff_data); summary(test_p_top_prop10_frac); plot_model(test_p_top_prop10_frac, type = "int")
+# test_njs_full <- lm(njs_full_mean ~condition*post_move + career_year, data = diffindiff_data); summary(test_njs_frac); plot_model(test_njs_full, type = "int")
+# test_njs_frac <- lm(njs_frac_mean ~condition*post_move + career_year, data = diffindiff_data); summary(test_njs_frac); plot_model(test_njs_frac, type = "int")
+# 
+# # running did with fixest (see https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#323_Staggered_difference-in-differences_(Sun_and_Abraham,_2020))
+# pacman::p_load(fixest)
+# hist(diffindiff_data$p_full_yearsum,40)
+# 
+# diffindiff_data_fixest <- diffindiff_data %>% 
+#   mutate(moving_year = if_else(condition == "stayers", 10000, moving_year),
+#          years_from_obtaining_usa_affilation = if_else(condition == "stayers", -1000, years_from_obtaining_usa_affilation)) # to run this version, we need to change the "year_treated" and the "time_to_treatment" for the control group
+# 
+# fixest_poison = fepois(p_full_yearsum ~ i(years_from_obtaining_usa_affilation, condition_numeric, ref = c(-1, -1000)) + woman:i(years_from_obtaining_usa_affilation, condition_numeric, ref = c(-1, -1000)) | discipline + cluster_id, diffindiff_data_fixest)
+# summary(fixest_poison, se = "twoway")
+# iplot(fixest_poison, xlab = 'Years until move',  ref.line = -1, se = "twoway")
+# 
+# fixest_poison_sa20 = fepois(p_full_yearsum ~ woman*sunab(moving_year, career_year)|  cluster_id + discipline, diffindiff_data_fixest)
+# summary(fixest_poison_sa20, se = "twoway")
+# iplot(fixest_poison_sa20, se = "twoway", xlab = 'Years until move',  ref.line = -1)
+# summary(fixest_poison_sa20, agg = "att") #how to get the average treatment effect for the treated (ATT)
+# 
+# 
+# iplot(list(fixest_poison, fixest_poison_sa20), sep = 0.5,  se = "twoway") #note that the x axis now has the title career_year (because it is calculating the difference between )
+# legend("topleft", col = c(1, 2), pch = c(20, 15), 
+#        legend = c("TWFE", "Sun & Abraham (2020)"))
+# 
+# summary(fixest_poison_sa20, agg = "att") #how to get the average treatment effect for the treated (ATT)
 
 ## running diff-in-diff with the did package (https://bcallaway11.github.io/did/index.html)
 pacman::p_load(did, readstata13, devtools)
