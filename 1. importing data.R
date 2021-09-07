@@ -1,4 +1,8 @@
-library(tidyverse)
+pacman::p_load(tidyverse, readxl)
+
+###########################################################
+################## IMPORTING RAW DATA #####################
+###########################################################
 
 #This little bit of code helps to turn names of months into months as numeric
 months <- seq(1,12,0.5) #i make a sequence of numeric months, but also with 0.5 decimals in between to use when the month was written as for example "Jan-Feb"
@@ -11,21 +15,18 @@ names(months) <- c("JAN","JAN-FEB", "FEB", "FEB-MAR", "MAR","MAR-APR", "APR","AP
 #######################
 
 #this first one is just to get author names, gender, (and first/last year - NB: I later realised that we shouldn't use these ones from WoS as they include conference abstracts)
-researcher_info <- read_delim("~/Desktop/WoS Data from Jesper/univ-1176-elegible-researchers2.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% #this dataset was for finding eligible authors from WoS. However it has some useful info, so we extract that
+researcher_info <- read_delim("raw_data/wos/univ-1176-elegible-researchers2.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% #this dataset was for finding eligible authors from WoS. However it has some useful info, so we extract that
   distinct(cluster_id, .keep_all = T) %>% 
   select(cluster_id, full_name, first_name, first_year, last_year, gender, gender_accuracy = accuracy)
 
 #this is the list of publications per authors that we took from WoS. 
 #i add a few extra variables:
 ## 1. "months_numeric" - A variable that gives month as a numeric value
-## 2. "months_numeric_null_is_min_of_year" - A variable that gives month as a numeric value, where missing months (NULL) are given the same value as the earliest other article published in that given year for that author
-## 3. "is_first_year" - A variable reporting whether this article is from an authors first year
-## 4. "is_earliest_timepoint" - A variable that shows whether this article (UT) was published at the earliest timepoint (year, month) recorded
+## 2. "months_numeric_null_is_min_of_year" - A variable that gives month as a numeric value, where missing months (NULL) are given the same value as the earliest other article published in that given year for that author. Failing that it is given the value 1.
 raw_publication_list <- 
-  read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/univ-1176-pubs-left-join.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% 
+  read_delim("raw_data/wos/univ-1176-pubs-left-join.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% 
+  rbind(read_delim("raw_data/wos_extra/new-cluster-ids-pub-left-join.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% mutate(lr_univ_id = NA, lr_region = NA, lr_country_name = NA, lr_univ_name = NA, lr_city = NA)) %>% 
   mutate(months_numeric = unname(months[pub_month])) %>% 
-  group_by(cluster_id) %>%
-  mutate(is_first_year = if_else(pub_year == min(pub_year),1,0)) %>%
   group_by(cluster_id, pub_year) %>% 
   mutate(months_numeric_null_is_min_of_year = if_else(is.na(months_numeric) == F,  months_numeric, min(months_numeric, na.rm=T)),
          months_numeric_null_is_min_of_year = if_else(is.infinite(months_numeric_null_is_min_of_year) == T, 1, months_numeric_null_is_min_of_year)) %>% 
@@ -41,31 +42,56 @@ intermediatestep_publication_order <- #here I calculate the order of publication
 
 #this is the main dataset.
 #compared to the raw_publication_list i have added:
-## 1. "order_of_publishing" - publication order based on pub_year and months_numeric_null_is_min_of_year. If two articles have the same, then it will be decided by UT (Accession Number)
-## 2. "author_affilations_count_per_ut" - number of author affiliations for a given paper (i.e. how many lines did an author have with the same UT)
+## 1. "order_of_publishing"
 
 publication_list_all <- raw_publication_list %>% 
-  left_join(intermediatestep_publication_order, by = c("cluster_id", "ut", "pub_year", "months_numeric_null_is_min_of_year")) %>% 
-  group_by(cluster_id, ut) %>% 
-  mutate(author_affilations_count_per_ut = n()) %>% #here for each combination of cluster_id and ut, i count the number of rows to assess the number of affiliations per given author for this paper
+  left_join(intermediatestep_publication_order, by = c("cluster_id", "ut", "pub_year", "months_numeric_null_is_min_of_year")) %>% #adding order_of_publishing
   left_join(researcher_info, by ="cluster_id") %>% #adding in our basic researcher data
-  ungroup() %>% 
-  select(-affiliation_seq, -months_numeric) %>%  #removing just a couple of unused variables %>% 
+  select(-author_seq, -affiliation_seq, -months_numeric) %>%  #removing just a couple of unused variables %>% 
   arrange(cluster_id, pub_year, months_numeric_null_is_min_of_year) %>% 
   group_by(cluster_id) %>% 
   mutate(first_year = min(pub_year), #this replaces the variable given by jesper since his version included conference abstracts
          last_year = max(pub_year),
-         career_year = pub_year-first_year,
-         career_length_months_at_this_pub = ((career_year*12)+months_numeric_null_is_min_of_year)-first(months_numeric_null_is_min_of_year)) %>% 
-  distinct(cluster_id, ut, pub_org, .keep_all = T) %>% #I noticed there were some duplicate rows, so this is my way of removing them
-  ungroup()
+         career_year = pub_year-first_year) %>% 
+  ungroup() %>% 
+  distinct(cluster_id, ut, pub_org, .keep_all = T) #I noticed there were some duplicate rows, so this is my way of removing them
 
 #Here we have the datasets that contain detailed information about the individual articles. I.e. discipline, citations etc
-publication_info <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/univ-1176-pub-vars-left-join.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
-citation_3year_info <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/merge-indicator-cit3yr.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
-citation_all_info <- read_delim("/Users/ben/Desktop/WoS\ Data\ from\ Jesper/merged-indicator-citvar.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+publication_info <- read_delim("raw_data/wos/univ-1176-pub-vars-left-join.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>%  
+  rbind(read_delim("raw_data/wos_extra/new-cluster-ids-pub-vars-left-join.txt", "\t", escape_double = FALSE, trim_ws = TRUE)) %>% distinct(ut, .keep_all = T) #had to select a single discipline/specialty for those that had multiple. First in dataframe is chosen.
+citation_3year_original <- read_delim("raw_data/wos/merge-indicator-cit3yr.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% select(-p_full,-p_frac, -cs_full,-cs_frac, -ncs_full,-ncs_frac, -js_full,-js_frac, -njs_full, -njs_frac) #we have updated values for bibliometric indicators so i have removed them here.
+#citation_all_info <- read_delim("data/wos/merged-indicator-citvar.txt", "\t", escape_double = FALSE, trim_ws = TRUE) #we're not using the full citations, so i commented this out
+updated_3_year_njs_full_data <- read_delim("raw_data/wos/njs_indicators.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% select(-pub_year, -source_title)
+updated_3_year_njs_frac_data <- read_delim("raw_data/wos/njs_indicators_frac.txt", "\t", escape_double = FALSE, trim_ws = TRUE) 
+citation_3year_step1 <- citation_3year_original %>% left_join(updated_3_year_njs_full_data, by ="ut") %>% left_join(updated_3_year_njs_frac_data, by ="ut")
 
-# #quick sanity check
-# table(unique(publication_info$ut) %in% unique(citation_all_info$ut)) #shows that all uts in publication_info are in citation_all_info
-# x <- publication_info %>% distinct(ut, .keep_all=T) %>% left_join(citation_all_info, by ="ut")
-# table(is.na(x$p_full)) # shows that there aren't any of the "NULL" rows that were in the citation_all_info df now in the combined dataset. seems good.
+extra_clusterid_3year_info <- read_delim("raw_data/wos_extra/extra_cluster_ids_merged_indicator_cit3yr.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% select(-p_full,-p_frac, -cs_full,-cs_frac, -ncs_full,-ncs_frac, -js_full,-js_frac, -njs_full, -njs_frac)
+extra_clusterid_njs_indicators <- read_delim("raw_data/wos_extra/new-cluster-ids-njs_indicators.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% select(everything(),"source_title" = journal)
+
+citation_3year_info <- citation_3year_step1 %>% 
+  rbind(extra_clusterid_3year_info %>% left_join(extra_clusterid_njs_indicators) %>% select(names(citation_3year_info)))
+  
+  
+#here I include grid data
+wos_matched_to_grid <- read_csv("raw_data/misc/wos_matched_to_grid_final.csv")
+grid_institute_types <- read_csv("raw_data/misc/grid_institute_types.csv")
+institute_grid_ids <- wos_matched_to_grid %>% left_join(grid_institute_types, by = "grid_id") %>% select(grid_id, wos_institute_name, type)
+
+#here I include ranking data
+qs_ranking <- read_csv("raw_data/misc/qs_ranking_and_grid_finalfinal.csv") %>% select(university, year_released, overall_rank, overall_score,reputation_rank,reputation_score, grid_id)
+LR_full_name <- read_excel("raw_data/misc/LR-full-name.xlsx") %>% select(lr_univ_id = cwts_organization_id, University = full_name, wos_name)
+CWTS_Leiden_Ranking_2020 <- read_excel("raw_data/misc/CWTS Leiden Ranking 2020.xlsx", sheet = "Results") %>% filter(Field == "All sciences")
+
+leiden_ranking <- CWTS_Leiden_Ranking_2020 %>% left_join(LR_full_name, by ="University")
+#here we have misc data that I have added to the wos data
+european_country_list <- read_csv("raw_data/misc/country_list.csv", col_names =T)
+
+save(researcher_info,
+     publication_list_all,
+     publication_info,
+     citation_3year_info,
+     european_country_list,
+     institute_grid_ids,
+     qs_ranking,
+     leiden_ranking,
+     file = "wos_data.RData")

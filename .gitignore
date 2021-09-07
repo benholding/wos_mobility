@@ -2,6 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
-data
-misc
-plots
+plots/*
+tables/*
+raw_data/*
+python
+misc code
+wos_data.Rdata

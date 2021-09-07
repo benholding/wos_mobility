@@ -1,21 +1,28 @@
 source("2. data cleaning and maniputation.R") #importing data and packages
 
 ##########################################
+## TO BE COMPLETED ##
+##########################################
+
 #### basic demographics about the whole dataset ####
 
-length(unique(final_complete_dataset$ut)) #1,217,055 articles
-length(unique(final_complete_dataset$cluster_id)) #122,933 researchers
+length(unique(final_complete_dataset$ut)) #1,670,813 articles
+length(unique(final_complete_dataset$cluster_id)) #178,621 researchers
 
-#How many affilations do people have?
-table(final_complete_dataset %>% distinct(cluster_id,ut, .keep_all = T) %>% pull(author_affilations_count_per_ut))
-hist(final_complete_dataset %>% distinct(cluster_id,ut, .keep_all = T) %>% pull(author_affilations_count_per_ut), 30)
+#### about the matched dataset
 
-#Number of countries authors are affilated in papers
-table(final_complete_dataset %>% group_by(cluster_id, ut) %>% mutate(n_pubcountries_per_paperauthor = n_distinct(lr_country_name)) %>% pull(n_pubcountries_per_paperauthor)) #Can we trust papers where authors have 3,4 or 5 countries of affilation?
-
-#How many people move around?
-final_complete_dataset %>% group_by(cluster_id) %>% mutate(n_distinct_pubcountries_total =n_distinct(pub_country)) %>% ungroup() %>% distinct(cluster_id, .keep_all=T) %>% count(n_distinct_pubcountries_total) #some people were affilated with 6,7,8,9 countries
-final_complete_dataset %>% group_by(cluster_id) %>% mutate(n_distinct_pubcountries_total =n_distinct(pub_country)) %>% ungroup() %>% distinct(cluster_id, .keep_all=T) %>% count(n_distinct_pubcountries_total) %>% filter(n_distinct_pubcountries_total>1) %>% summarise(count_overall_movers = sum(n)) #61,377
+matched_dataset
+dim(matched_dataset) #54000 years of data
+dim(matched_dataset %>% filter(career_over == F))
+n_distinct(matched_dataset$cluster_id) #4500 resarchers
 
 
+#### about the final diff-in-diff dataset
+
+diffindiff_data %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>%  count(discipline) #do this to see how many matches per discipline
+diffindiff_data %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_country) %>% print(n=100) #do this to see how many matches per discipline
+
+diffindiff_data %>% distinct(cluster_id, .keep_all = T) %>%filter(condition_numeric == 1) %>% count(gender) #do this to see how many matches per discipline
+diffindiff_data %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_type) #i manually went through the missing - 14 = education, 1 = archive, 25 = facility, 12 = government, 14 = healthcare, 6 = nonprofit
+diffindiff_data %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(USA_type) # i manually went through the missing - 1 = education, 1 =archive, 1 = facility, 1= gov, 2 = health, 4 = nonprofit
 
