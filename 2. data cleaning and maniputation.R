@@ -7,8 +7,8 @@ pacman::p_load(tidyverse, cumstats)
 #########################################################################
 
 # making a dataset with publications only for authors that fulfill criteria:
-# 1. only European institutions
-# 2. only from one country
+# 1. only from one country
+# 2. only European institutions
 # 3. only from certain disciplines (those that are well covered in wos, and don't have abnormally high coauthorship rates)
 
 ####################################################################################
