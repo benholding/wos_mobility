@@ -37,9 +37,7 @@ intermediatestep_publication_order <- #here I calculate the order of publication
   group_by(cluster_id) %>% 
   mutate(order_of_publishing = row_number())
 
-#this is the main dataset, with author info + all publications per author.
-#compared to the raw_publication_list i have added:
-## 1. "order_of_publishing"
+#creating the main dataset - contains: author info + all publications per author + "order_of_publishing" + first_year + last_year + career year
 
 publication_list_all <- raw_publication_list %>% 
   left_join(intermediatestep_publication_order, by = c("cluster_id", "ut", "pub_year", "months_numeric_null_is_min_of_year")) %>% #adding order_of_publishing
@@ -49,11 +47,11 @@ publication_list_all <- raw_publication_list %>%
   group_by(cluster_id) %>% 
   mutate(first_year = min(pub_year), #this replaces the variable given by jesper since his version included conference abstracts
          last_year = max(pub_year),
-         career_year = pub_year-first_year) %>% 
+         career_year = pub_year-first_year) %>% #new variable: career year (0 = first year)
   ungroup() %>% 
   distinct(cluster_id, ut, pub_org, .keep_all = T) #I noticed there were some duplicate rows, so this is my way of removing them
 
-#Here we have the datasets that contain detailed information about the individual articles. I.e. discipline, citations etc
+#Next, i import: articles metadata + citations
 publication_info <- read_delim("raw_data/wos/univ-1176-pub-vars-left-join.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>%  
   rbind(read_delim("raw_data/wos_extra/new-cluster-ids-pub-vars-left-join.txt", "\t", escape_double = FALSE, trim_ws = TRUE)) %>% distinct(ut, .keep_all = T) #had to select a single discipline/specialty for those that had multiple. First in dataframe is chosen.
 citation_3year_original <- read_delim("raw_data/wos/merge-indicator-cit3yr.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% select(-p_full,-p_frac, -cs_full,-cs_frac, -ncs_full,-ncs_frac, -js_full,-js_frac, -njs_full, -njs_frac) #we have updated values for bibliometric indicators so i have removed them here.
@@ -69,20 +67,22 @@ citation_3year_info <- citation_3year_step1 %>%
   rbind(extra_clusterid_3year_info %>% left_join(extra_clusterid_njs_indicators) %>% select(names(citation_3year_info)))
   
   
-#here I include grid data
+#Next, I import the wos institution names that i matched to their grid profiles using the dimensions api. The main dataset "institute_grids_ids" contains also what "type of institute"
 wos_matched_to_grid <- read_csv("raw_data/misc/wos_matched_to_grid_final.csv")
 grid_institute_types <- read_csv("raw_data/misc/grid_institute_types.csv")
 institute_grid_ids <- wos_matched_to_grid %>% left_join(grid_institute_types, by = "grid_id") %>% select(grid_id, wos_institute_name, type)
 
-#here I include ranking data
+#Next, I import the university rankings. these were matched to the institute names in wos by first matching them to grid.
 qs_ranking <- read_csv("raw_data/misc/qs_ranking_and_grid_finalfinal.csv") %>% select(university, year_released, overall_rank, overall_score,reputation_rank,reputation_score, grid_id)
 LR_full_name <- read_excel("raw_data/misc/LR-full-name.xlsx") %>% select(lr_univ_id = cwts_organization_id, University = full_name, wos_name)
 CWTS_Leiden_Ranking_2020 <- read_excel("raw_data/misc/CWTS Leiden Ranking 2020.xlsx", sheet = "Results") %>% filter(Field == "All sciences")
 
 leiden_ranking <- CWTS_Leiden_Ranking_2020 %>% left_join(LR_full_name, by ="University")
-#here we have misc data that I have added to the wos data
+
+#Next, i import a list of countries that count as being "Europe"
 european_country_list <- read_csv("raw_data/misc/country_list.csv", col_names =T)
 
+#Finally, i make a single RData file so in future i don't have to run this script agains
 save(researcher_info,
      publication_list_all,
      publication_info,
