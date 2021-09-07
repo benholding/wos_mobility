@@ -14,22 +14,19 @@ names(months) <- c("JAN","JAN-FEB", "FEB", "FEB-MAR", "MAR","MAR-APR", "APR","AP
 ### loading in data ###
 #######################
 
-#this first one is just to get author names, gender, (and first/last year - NB: I later realised that we shouldn't use these ones from WoS as they include conference abstracts)
-researcher_info <- read_delim("raw_data/wos/univ-1176-elegible-researchers2.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% #this dataset was for finding eligible authors from WoS. However it has some useful info, so we extract that
+##this dataset was for finding eligible authors from WoS. However it has some useful info (author names, gender, gender accuracy), so we extract that 
+researcher_info <- read_delim("raw_data/wos/univ-1176-elegible-researchers2.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% 
   distinct(cluster_id, .keep_all = T) %>% 
-  select(cluster_id, full_name, first_name, first_year, last_year, gender, gender_accuracy = accuracy)
+  select(cluster_id, full_name, first_name, gender, gender_accuracy = accuracy)
 
-#this is the list of publications per authors that we took from WoS. 
-#i add a few extra variables:
-## 1. "months_numeric" - A variable that gives month as a numeric value
-## 2. "months_numeric_null_is_min_of_year" - A variable that gives month as a numeric value, where missing months (NULL) are given the same value as the earliest other article published in that given year for that author. Failing that it is given the value 1.
+## this dataset is the list of publications per author
 raw_publication_list <- 
-  read_delim("raw_data/wos/univ-1176-pubs-left-join.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% 
+  read_delim("raw_data/wos/univ-1176-pubs-left-join.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% #this is the list of publications for each of the authors we "extracted" from web of science
   rbind(read_delim("raw_data/wos_extra/new-cluster-ids-pub-left-join.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% mutate(lr_univ_id = NA, lr_region = NA, lr_country_name = NA, lr_univ_name = NA, lr_city = NA)) %>% 
   mutate(months_numeric = unname(months[pub_month])) %>% 
   group_by(cluster_id, pub_year) %>% 
-  mutate(months_numeric_null_is_min_of_year = if_else(is.na(months_numeric) == F,  months_numeric, min(months_numeric, na.rm=T)),
-         months_numeric_null_is_min_of_year = if_else(is.infinite(months_numeric_null_is_min_of_year) == T, 1, months_numeric_null_is_min_of_year)) %>% 
+  mutate(months_numeric_null_is_min_of_year = if_else(is.na(months_numeric) == F,  months_numeric, min(months_numeric, na.rm=T)), #new var: 1. "months_numeric" - A variable that gives month as a numeric value
+         months_numeric_null_is_min_of_year = if_else(is.infinite(months_numeric_null_is_min_of_year) == T, 1, months_numeric_null_is_min_of_year)) %>% # new var: 2. "months_numeric_null_is_min_of_year" - A variable that gives month as a numeric value, where missing months (NULL) are given the same value as the earliest other article published in that given year for that author. Failing that it is given the value 1.
   ungroup() 
 
 intermediatestep_publication_order <- #here I calculate the order of publications per author. I add it to the above dataset in the next step
@@ -40,7 +37,7 @@ intermediatestep_publication_order <- #here I calculate the order of publication
   group_by(cluster_id) %>% 
   mutate(order_of_publishing = row_number())
 
-#this is the main dataset.
+#this is the main dataset, with author info + all publications per author.
 #compared to the raw_publication_list i have added:
 ## 1. "order_of_publishing"
 

@@ -5,6 +5,6 @@
 plots/*
 tables/*
 raw_data/*
-python
+python/*
 misc code
 wos_data.Rdata
