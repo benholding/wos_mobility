@@ -60,7 +60,7 @@ wos_covered_disciplines <- publication_info %>%
   filter(proportion_of_refs_covered >= .6,#Biology, Biomedical Research, Chemistry, Clinical Medicine, Earth and Space, Engineering & tech, Health, Maths, Physics, & Psychology are all >60% covered
          !is.na(discipline)) 
 
-step3 <- step2 %>% #taking the just made dataset
+step3 <- step2 %>% #taking the dataset made in step 2 above
   left_join(publication_info, by = c("ut")) %>% #joining it with the publication_info dataset, in order to get discipline information for each publication
   group_by(cluster_id) %>% 
   count(discipline) %>% # i then count how many articles have each disciples per author
@@ -81,25 +81,25 @@ average_number_of_coauthors_per_specialty <- publication_info %>%
   group_by(specialty) %>% 
   summarise(mean_n_authors = mean(n_authors, na.rm=T),
             median_n_authors = median(n_authors, na.rm=T)) %>% 
-  arrange(desc(mean_n_authors)) #Nuclear & Pa rticle Physics has 139 mean authors compared to next nearest 18.8, so anyone working primarily in this specialty will be removed
+  arrange(desc(mean_n_authors)) #Nuclear & Particle Physics has 139 mean authors compared to next nearest 18.8, so anyone working primarily in this specialty will be removed
 
-#here I add the each researchers main specialty to the dataset, and then remove researchers who focus on "Nuclear & Particle Physics"
-step4 <- step3 %>% 
-  select(-discipline) %>% 
-  left_join(publication_info, by = c("ut")) %>% 
+#here I add the each researchers main specialty to the dataset, and then remove researchers who focus on the specialty "Nuclear & Particle Physics"
+step4 <- step3 %>% #take the step 3 dataset (i.e. only wos covered disciplines)
+  select(-discipline) %>% #...remove this column since it will be duplicate when we...
+  left_join(publication_info, by = c("ut")) %>% #...join the author information to the publication metadata
   group_by(cluster_id) %>% 
-  add_count(specialty, name = "n_specialty_articles") %>% 
-  add_count(discipline, name = "n_discipline_articles") %>% 
-  distinct(cluster_id, discipline, specialty, .keep_all = T) %>% 
+  add_count(specialty, name = "n_specialty_articles") %>% #per cluster id, this provides a count of number of articles with this specialty...
+  add_count(discipline, name = "n_discipline_articles") %>% #and also discipline
+  distinct(cluster_id, discipline, specialty, .keep_all = T) %>% #keeping one row per cluster_id
   select(cluster_id, discipline, n_discipline_articles,specialty, n_specialty_articles) %>% 
-  filter(!is.na(discipline), 
-         !is.na(specialty)) %>% 
-  arrange(cluster_id, desc(n_discipline_articles), desc(n_specialty_articles)) %>% 
-  slice(1) %>% 
+  filter(!is.na(discipline),
+         !is.na(specialty)) %>% #keeping only individuals with a main discipline and specialty
+  arrange(cluster_id, desc(n_discipline_articles), desc(n_specialty_articles)) %>% #this arranges the dataset so that an individuals top discipline is at the top, which is further ordered by specialty 
+  slice(1) %>% #taking an individuals top specialty....
   select(cluster_id, specialty) %>% 
   distinct(cluster_id, .keep_all = T) %>% 
-  filter(specialty != "Nuclear & Particle Physics") %>% 
-  left_join(step3, by = "cluster_id")
+  filter(specialty != "Nuclear & Particle Physics") %>% #...and excluding  cluster ids with a specialty of nuclear physics.
+  left_join(step3, by = "cluster_id") #then joining the whole dataset back got all individuals that weren't excluded.
 
 length(unique(step4$cluster_id)) #at this point we have 178,621 researchers
 length(unique(step3$cluster_id))-length(unique(step4$cluster_id)) #change = 3130
@@ -112,21 +112,21 @@ step5 <-
   step4 %>% 
   filter(order_of_publishing == 1) %>% #take the data of everyone at order_of_publishing = 1...
   select(cluster_id, pub_org_name) %>% 
-  left_join(publication_list_all, by = c("cluster_id", "pub_org_name")) %>% 
+  left_join(publication_list_all, by = c("cluster_id", "pub_org_name")) %>% #... get their publications
   group_by(cluster_id, pub_org_name) %>% 
-  mutate(number_of_publications_with_this_affilation = n()) %>% #...on each affilation measure how many times researchers published with this affilation during career.
+  mutate(number_of_publications_with_this_affilation = n()) %>% #for each affilation measure how many times researchers published with this affilation during career.
   distinct(cluster_id, pub_org_name, number_of_publications_with_this_affilation, .keep_all = T) %>% 
   select(cluster_id, pub_org_name, number_of_publications_with_this_affilation, lr_univ_id,pub_country) %>% 
   group_by(cluster_id) %>% 
   arrange(cluster_id, desc(number_of_publications_with_this_affilation),lr_univ_id) %>% #important ordering to ensure the comment below is correct.
-  mutate(origin_institution = first(pub_org_name),#this makes a variable of the origin institution. If there were multiple institutions at order_of_publishing == 1, then this takes the institution where the researcher had the most publications in his/her career. if it is a tie, then the leiden ranked university is chosen. If it is still a tie then it is selected alphabetically.
-         origin_country = first(pub_country),
-         origin_leiden_ranked = first(if_else(is.na(lr_univ_id), 0, 1))) %>% 
+  mutate(origin_institution = first(pub_org_name), #this makes a variable of the origin institution. If there were multiple institutions at order_of_publishing == 1, then this takes the institution where the researcher had the most publications in his/her career. if it is a tie, then the leiden ranked university is chosen. If it is still a tie then it is selected alphabetically.
+         origin_country = first(pub_country), #new variable: what is the origin country of the researcher
+         origin_leiden_ranked = first(if_else(is.na(lr_univ_id), 0, 1))) %>% #new variable: is the origin institute Leiden ranked?
   select(cluster_id, origin_institution, origin_country,origin_leiden_ranked) %>% 
   distinct(cluster_id, .keep_all = T) %>% 
-  left_join(step4, by ="cluster_id")
+  left_join(step4, by ="cluster_id") #creates a dataset with information about the authors, including origin info, + each UT (but with no further meta data)
   
-final_complete_dataset <- step5 %>% 
+final_complete_dataset <- step5 %>% #this becomes the dataset that contains descriptive information about all of our potential matches
   filter(origin_institution == pub_org_name) %>% 
   arrange(cluster_id, order_of_publishing) %>% 
   group_by(cluster_id) %>%
@@ -460,3 +460,12 @@ researcher_performance_years <- #this is the final dataset that I use in the ana
 cumulative_researcher_performance_years <- 
   researcher_performance_years  %>% 
   select(cluster_id, career_year, ends_with(c("cumsum","cummean", "cummedian")))
+
+### a final note ###
+# The main datasets we get out of this script that are used later on are:
+# 1. final_complete_dataset - contains all descriptive information about potential researchers to be included in the analysis (both movers and stayers) + UTs
+# 2. movers_dataset_final - contains all descriptive information about movers + UTs + ranking information [most important info is probably just the cluster_ids]
+# 3. stayers_dataset_3 - contains all descriptive information about eligable "stayers" + UTs [most important info is probably just the cluster_ids]
+# 4. researcher_performance_years - for all researchers in final_complete_dataset, this contains per-career-year performance information
+# 5. cumulative_researcher_performance_years - for all researchers in final_complete_dataset, this contains CUMULATIVE performance information per career year.
+###################

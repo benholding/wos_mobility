@@ -79,7 +79,7 @@ CWTS_Leiden_Ranking_2020 <- read_excel("raw_data/misc/CWTS Leiden Ranking 2020.x
 
 leiden_ranking <- CWTS_Leiden_Ranking_2020 %>% left_join(LR_full_name, by ="University")
 
-#Next, i import a list of countries that count as being "Europe"
+#Next, i import a list of countries that count as being "Europe". these are the same country names as is used in the wos data.
 european_country_list <- read_csv("raw_data/misc/country_list.csv", col_names =T)
 
 #Finally, i make a single RData file so in future i don't have to run this script agains
