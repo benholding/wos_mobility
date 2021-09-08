@@ -1,6 +1,6 @@
 load("matched_dataset.RData") #importing data and packages
 
-pacman::p_load(sjPlot, cowplot, did, lmerTest, ggpubr, interplot,mediation) #https://cran.r-project.org/web/packages/interplot/vignettes/interplot-vignette.html
+pacman::p_load(tidyverse, sjPlot, cowplot, did, lmerTest, ggpubr, interplot,mediation) #https://cran.r-project.org/web/packages/interplot/vignettes/interplot-vignette.html
 detach("package:dplyr", unload = TRUE)
 library(dplyr)
 set.seed(5030)
@@ -333,11 +333,12 @@ tab_model(pfull_pptop10, #table of leiden ranking moderation
 #Step 3a. running the mediation analysis#
 #### QS RANKING ######
 # p full
+set.seed(5030)
 detach("package:lmerTest", unload = T)
 pfull_qs_med.fit <- lmer(gelman_difference_in_qs_overall_score_zeropremove ~ post_move + career_year + origin_qs_overall_score_mean+ (1|cluster_id), data = diffindiff_data_only_movers_qs_diff)
 pfull_qs_out.fit <- lmer(p_full_yearsum ~ gelman_difference_in_qs_overall_score_zeropremove + post_move + career_year + origin_qs_overall_score_mean+ (1|cluster_id), data = diffindiff_data_only_movers_qs_diff)
 
-pfull_qs_med.out <- mediate(pfull_qs_med.fit, pfull_qs_out.fit, treat = "post_move", mediator = "gelman_difference_in_qs_overall_score_zeropremove", robustSE = F, sims = 100)
+pfull_qs_med.out <- mediate(pfull_qs_med.fit, pfull_qs_out.fit, treat = "post_move", mediator = "gelman_difference_in_qs_overall_score_zeropremove", robustSE = F, sims = 1000)
 med_qs_pubs <- summary(pfull_qs_med.out)
 
 # citation score
@@ -345,7 +346,7 @@ ncs_qs_mediation_data <- diffindiff_data_only_movers_qs_diff %>% filter(!is.na(n
 ncs_qs_med.fit <- lmer(gelman_difference_in_qs_overall_score_zeropremove ~ post_move + career_year + origin_qs_overall_score_mean + (1|cluster_id), data = ncs_qs_mediation_data)
 ncs_qs_out.fit <- lmer(ncs_full_mean ~ gelman_difference_in_qs_overall_score_zeropremove + post_move + career_year + origin_qs_overall_score_mean+ (1|cluster_id), data = ncs_qs_mediation_data)
 
-ncs_qs_med.out <- mediate(ncs_qs_out.fit, ncs_qs_out.fit, treat = "post_move", mediator = "gelman_difference_in_qs_overall_score_zeropremove", robustSE = F, sims = 100)
+ncs_qs_med.out <- mediate(ncs_qs_out.fit, ncs_qs_out.fit, treat = "post_move", mediator = "gelman_difference_in_qs_overall_score_zeropremove", robustSE = F, sims = 1000)
 med_qs_ncs <- summary(ncs_qs_med.out)
 
 # journal score
@@ -353,31 +354,30 @@ njs_qs_mediation_data <- diffindiff_data_only_movers_qs_diff %>% filter(!is.na(n
 njs_qs_med.fit <- lmer(gelman_difference_in_qs_overall_score_zeropremove ~ post_move + career_year + origin_qs_overall_score_mean+ (1|cluster_id), data = njs_qs_mediation_data)
 njs_qs_out.fit <- lmer(njs_full_mean ~ gelman_difference_in_qs_overall_score_zeropremove + post_move + career_year + origin_qs_overall_score_mean+ (1|cluster_id), data = njs_qs_mediation_data)
 
-njs_qs_med.out <- mediate(njs_qs_med.fit, njs_qs_out.fit, treat = "post_move", mediator = "gelman_difference_in_qs_overall_score_zeropremove", robustSE = F, sims = 100)
+njs_qs_med.out <- mediate(njs_qs_med.fit, njs_qs_out.fit, treat = "post_move", mediator = "gelman_difference_in_qs_overall_score_zeropremove", robustSE = F, sims = 1000)
 med_qs_njs <- summary(njs_qs_med.out)
 
 # top journals
 topjoural_qs_med.fit <- lmer(gelman_difference_in_qs_overall_score_zeropremove ~ post_move + career_year + origin_qs_overall_score_mean+ (1|cluster_id), data = diffindiff_data_only_movers_qs_diff)
 topjournal_qs_out.fit <- lmer(njs_full_over2_yearsum ~ gelman_difference_in_qs_overall_score_zeropremove + post_move + career_year + origin_qs_overall_score_mean+ (1|cluster_id), data = diffindiff_data_only_movers_qs_diff)
 
-topjournal_qs_med.out <- mediate(topjoural_qs_med.fit, topjournal_qs_out.fit, treat = "post_move", mediator = "gelman_difference_in_qs_overall_score_zeropremove", robustSE = F, sims = 100)
+topjournal_qs_med.out <- mediate(topjoural_qs_med.fit, topjournal_qs_out.fit, treat = "post_move", mediator = "gelman_difference_in_qs_overall_score_zeropremove", robustSE = F, sims = 1000)
 med_qs_topjournals <- summary(topjournal_qs_med.out)
 
 # top 10%
 top10_qs_med.fit <- lmer(gelman_difference_in_qs_overall_score_zeropremove ~ post_move + career_year + origin_qs_overall_score_mean+ (1|cluster_id), data = diffindiff_data_only_movers_qs_diff)
 top10_qs_out.fit <- lmer(p_top_prop10_full_yearsum ~ gelman_difference_in_qs_overall_score_zeropremove + post_move + career_year + origin_qs_overall_score_mean +(1|cluster_id), data = diffindiff_data_only_movers_qs_diff)
 
-top10_qs_med.out <- mediate(top10_qs_med.fit, top10_qs_out.fit, treat = "post_move", mediator = "gelman_difference_in_qs_overall_score_zeropremove", robustSE = F, sims = 100)
+top10_qs_med.out <- mediate(top10_qs_med.fit, top10_qs_out.fit, treat = "post_move", mediator = "gelman_difference_in_qs_overall_score_zeropremove", robustSE = F, sims = 1000)
 med_qs_pptop10 <- summary(top10_qs_med.out)
 
 ##### LEIDEN RANKING ######
 
 # p full
-detach("package:lmerTest", unload = T)
 pfull_med.fit <- lmer(gelman_difference_in_pptop10_zeropremove ~ post_move + career_year + origin_pp_top10_mean+ (1|cluster_id), data = diffindiff_data_only_movers_leiden_diff)
 pfull_out.fit <- lmer(p_full_yearsum ~ gelman_difference_in_pptop10_zeropremove + post_move + career_year + origin_pp_top10_mean+ (1|cluster_id), data = diffindiff_data_only_movers_leiden_diff)
 
-pfull_med.out <- mediate(pfull_med.fit, pfull_out.fit, treat = "post_move", mediator = "gelman_difference_in_pptop10_zeropremove", robustSE = T, sims = 100)
+pfull_med.out <- mediate(pfull_med.fit, pfull_out.fit, treat = "post_move", mediator = "gelman_difference_in_pptop10_zeropremove", robustSE = T, sims = 1000)
 med_leiden_pubs <- summary(pfull_med.out)
 
 # citation score
@@ -385,7 +385,7 @@ ncs_mediation_data <- diffindiff_data_only_movers_leiden_diff %>% filter(!is.na(
 ncs_med.fit <- lmer(gelman_difference_in_pptop10_zeropremove ~ post_move + career_year + origin_pp_top10_mean + (1|cluster_id), data = ncs_mediation_data)
 ncs_out.fit <- lmer(ncs_full_mean ~ gelman_difference_in_pptop10_zeropremove + post_move + career_year + origin_pp_top10_mean+ (1|cluster_id), data = ncs_mediation_data)
 
-ncs_med.out <- mediate(ncs_med.fit, ncs_out.fit, treat = "post_move", mediator = "gelman_difference_in_pptop10_zeropremove", robustSE = F, sims = 100)
+ncs_med.out <- mediate(ncs_med.fit, ncs_out.fit, treat = "post_move", mediator = "gelman_difference_in_pptop10_zeropremove", robustSE = F, sims = 1000)
 med_leiden_ncs <- summary(ncs_med.out)
 
 # journal score
@@ -393,21 +393,21 @@ njs_mediation_data <- diffindiff_data_only_movers_leiden_diff %>% filter(!is.na(
 njs_med.fit <- lmer(gelman_difference_in_pptop10_zeropremove ~ post_move + career_year + origin_pp_top10_mean+ (1|cluster_id), data = njs_mediation_data)
 njs_out.fit <- lmer(njs_full_mean ~ gelman_difference_in_pptop10_zeropremove + post_move + career_year + origin_pp_top10_mean+ (1|cluster_id), data = njs_mediation_data)
 
-njs_med.out <- mediate(njs_med.fit, njs_out.fit, treat = "post_move", mediator = "gelman_difference_in_pptop10_zeropremove", robustSE = F, sims = 100)
+njs_med.out <- mediate(njs_med.fit, njs_out.fit, treat = "post_move", mediator = "gelman_difference_in_pptop10_zeropremove", robustSE = F, sims = 1000)
 med_leiden_njs <- summary(njs_med.out)
 
 # top journals
 topjoural_med.fit <- lmer(gelman_difference_in_pptop10_zeropremove ~ post_move + career_year + origin_pp_top10_mean+ (1|cluster_id), data = diffindiff_data_only_movers_leiden_diff)
 topjournal_out.fit <- lmer(njs_full_over2_yearsum ~ gelman_difference_in_pptop10_zeropremove + post_move + career_year + origin_pp_top10_mean+ (1|cluster_id), data = diffindiff_data_only_movers_leiden_diff)
 
-topjournal_med.out <- mediate(topjoural_med.fit, topjournal_out.fit, treat = "post_move", mediator = "gelman_difference_in_pptop10_zeropremove", robustSE = F, sims = 100)
+topjournal_med.out <- mediate(topjoural_med.fit, topjournal_out.fit, treat = "post_move", mediator = "gelman_difference_in_pptop10_zeropremove", robustSE = F, sims = 1000)
 med_leiden_topjournals <- summary(topjournal_med.out)
 
 # top 10%
 top10_med.fit <- lmer(gelman_difference_in_pptop10_zeropremove ~ post_move + career_year + origin_pp_top10_mean+ (1|cluster_id), data = diffindiff_data_only_movers_leiden_diff)
 top10_out.fit <- lmer(p_top_prop10_full_yearsum ~ gelman_difference_in_pptop10_zeropremove + post_move + career_year + origin_pp_top10_mean +(1|cluster_id), data = diffindiff_data_only_movers_leiden_diff)
 
-top10_med.out <- mediate(top10_med.fit, top10_out.fit, treat = "post_move", mediator = "gelman_difference_in_pptop10_zeropremove", robustSE = F, sims = 100)
+top10_med.out <- mediate(top10_med.fit, top10_out.fit, treat = "post_move", mediator = "gelman_difference_in_pptop10_zeropremove", robustSE = F, sims = 1000)
 med_leiden_pptop10 <- summary(top10_med.out)
 
 #step 3b creating a table with the mediation analysis results#

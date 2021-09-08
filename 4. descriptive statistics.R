@@ -1,22 +1,21 @@
 load("matched_dataset.RData")
-
+pacman::p_load(cowplot, dplyr, vioplot, ggplot2)
 ##################################################
 ############# DESCRIPTIVE STATISTICS #############
 ##################################################
 
 dim(matched_dataset) #54000 years of data
-dim(matched_dataset %>% filter(career_over == F))
+dim(matched_dataset %>% filter(career_over == F)) #46785 years of actual career
 n_distinct(matched_dataset$cluster_id) #4500 resarchers
 
+# Descriptive info about the final matched dataset
 
-#### about the final diff-in-diff dataset
+matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>%  count(discipline) #How many matches per discipline
+matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_country) %>% print(n=100) #How many matches per country
 
-diffindiff_data %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>%  count(discipline) #do this to see how many matches per discipline
-diffindiff_data %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_country) %>% print(n=100) #do this to see how many matches per discipline
-
-diffindiff_data %>% distinct(cluster_id, .keep_all = T) %>%filter(condition_numeric == 1) %>% count(gender) #do this to see how many matches per discipline
-diffindiff_data %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_type) #i manually went through the missing - 14 = education, 1 = archive, 25 = facility, 12 = government, 14 = healthcare, 6 = nonprofit
-diffindiff_data %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(USA_type) # i manually went through the missing - 1 = education, 1 =archive, 1 = facility, 1= gov, 2 = health, 4 = nonprofit
+matched_dataset %>% distinct(cluster_id, .keep_all = T) %>%filter(condition_numeric == 1) %>% count(gender) #How many matches per gender
+matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_type) #how many types of origin institution per match. i manually went through the NA - 14 = education, 1 = archive, 25 = facility, 12 = government, 14 = healthcare, 6 = nonprofit
+matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(USA_type) #how many types of USA institution per match. i manually went through the NA - 1 = education, 1 =archive, 1 = facility, 1= gov, 2 = health, 4 = nonprofit
 
 #############################################
 ######## MAKING RAW DATA PLOTS ##############
