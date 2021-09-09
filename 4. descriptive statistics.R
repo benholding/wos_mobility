@@ -12,7 +12,6 @@ n_distinct(matched_dataset$cluster_id) #4500 resarchers
 
 matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>%  count(discipline) #How many matches per discipline
 matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_country) %>% print(n=100) #How many matches per country
-
 matched_dataset %>% distinct(cluster_id, .keep_all = T) %>%filter(condition_numeric == 1) %>% count(gender) #How many matches per gender
 matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_type) #how many types of origin institution per match. i manually went through the NA - 14 = education, 1 = archive, 25 = facility, 12 = government, 14 = healthcare, 6 = nonprofit
 matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(USA_type) #how many types of USA institution per match. i manually went through the NA - 1 = education, 1 =archive, 1 = facility, 1= gov, 2 = health, 4 = nonprofit
@@ -20,8 +19,6 @@ matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_num
 #############################################
 ######## MAKING RAW DATA PLOTS ##############
 #############################################
-
-se <- function(x) sd(x)/sqrt(length(x))
 
 controls_data_forplots <- matched_dataset %>%  
   filter(years_from_obtaining_usa_affilation <= 2 & years_from_obtaining_usa_affilation >= -5,
