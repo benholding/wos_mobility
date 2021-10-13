@@ -166,7 +166,7 @@ matched_eligible_robustnesscheck <- robustnesscheck <- matches_basic %>%
   mutate(number_of_matches = n()) %>% 
   ungroup()
 
-unique_matched_robustnesscheck <- matched_eligible %>% 
+unique_matched_robustnesscheck <- matched_eligible_robustnesscheck %>% 
   mutate(do_specialties_match = if_else(specialty_movers == specialty_stayers, 1, 0)) %>% 
   arrange(number_of_matches, desc(do_specialties_match), desc(end_of_career_year_stayers)) %>% #I match on specialties when possible. I also prefer stayers individuals in science for longer
   distinct(cluster_id_stayers, .keep_all = T) %>% 

@@ -140,6 +140,7 @@ final_complete_dataset <- step5 %>% #this becomes the dataset that contains desc
 length(unique(final_complete_dataset$cluster_id)) #at this point we have 178,621 researchers
 length(unique(publication_list_all$cluster_id))-length(unique(final_complete_dataset$cluster_id)) #total exclusion to "enrollment" = 347271
 
+save(final_complete_dataset, file = "eligible_researchers.RData")
 #########################################################################
 #########################################################################
 ########## GETTING A DATASET OF ALL ELIGIBLE MOVERS TO THE USA ##########

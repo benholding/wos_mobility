@@ -63,8 +63,18 @@ citation_3year_step1 <- citation_3year_original %>% left_join(updated_3_year_njs
 extra_clusterid_3year_info <- read_delim("raw_data/wos_extra/extra_cluster_ids_merged_indicator_cit3yr.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% select(-p_full,-p_frac, -cs_full,-cs_frac, -ncs_full,-ncs_frac, -js_full,-js_frac, -njs_full, -njs_frac)
 extra_clusterid_njs_indicators <- read_delim("raw_data/wos_extra/new-cluster-ids-njs_indicators.txt", "\t", escape_double = FALSE, trim_ws = TRUE) %>% select(everything(),"source_title" = journal)
 
-citation_3year_info <- citation_3year_step1 %>% 
-  rbind(extra_clusterid_3year_info %>% left_join(extra_clusterid_njs_indicators) %>% select(names(citation_3year_info)))
+citation_3year_info <- 
+  citation_3year_step1 %>% 
+  rbind(
+    extra_clusterid_3year_info %>% 
+      left_join(extra_clusterid_njs_indicators) %>% 
+      select(
+        names(
+          citation_3year_step1
+          )
+        )
+    )
+
   
   
 #Next, I import the wos institution names that i matched to their grid profiles using the dimensions api. The main dataset "institute_grids_ids" contains also what "type of institute"

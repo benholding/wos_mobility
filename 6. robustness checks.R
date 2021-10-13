@@ -740,7 +740,7 @@ ggexport(RC_moderation_plot_grid, filename = "plots/S12_robustness_moderation.pd
 
 
 ################################################################################################################
-########3# ROBUSTNESS CHECK 8 - assessing mediation using the differences in university ranking quantile #######
+##########  ROBUSTNESS CHECK 8 - assessing mediation using the differences in university ranking quantile #######
 ################################################################################################################
 
 # Check 8, step 1 - running the medation analyses #
@@ -1176,3 +1176,394 @@ low_high_rankings_table <- c("", "publications","", "ncs", "", "njs", "", "top j
   rbind(c("Leiden high ATT" , round(c(RC_LEIDEN_HIGH_did_model_pfull_dynamic_short$overall.att, RC_LEIDEN_HIGH_did_model_pfull_dynamic_short$overall.se, RC_LEIDEN_HIGH_did_model_ncs_dynamic_short$overall.att, RC_LEIDEN_HIGH_did_model_ncs_dynamic_short$overall.se, RC_LEIDEN_HIGH_did_model_njs_dynamic_short$overall.att,RC_LEIDEN_HIGH_did_model_njs_dynamic_short$overall.se, RC_LEIDEN_HIGH_did_model_topjournals_dynamic_short$overall.att, RC_LEIDEN_HIGH_did_model_topjournals_dynamic_short$overall.se, RC_LEIDEN_HIGH_did_model_topcited_dynamic_short$overall.att, RC_LEIDEN_HIGH_did_model_topcited_dynamic_short$overall.se),2)))
 
 write.csv(low_high_rankings_table, "tables/S8. low_vs_high_ranking_ATTs.csv")
+
+###############################################################################################################################
+########## ROBUSTNESS CHECK 10 - checking whether there are regional differences in the size of the movers advantage ##########
+###############################################################################################################################
+# check 10, step 1 - making seperate datasets for each region #
+easterncountries_matched_dataset <- matched_dataset %>% filter(origin_region == "eastern")
+northerncountries_matched_dataset <- matched_dataset %>% filter(origin_region == "northern")
+southerncountries_matched_dataset <- matched_dataset %>% filter(origin_region == "southern")
+westerncountries_matched_dataset <- matched_dataset %>% filter(origin_region == "western")
+
+#check 10, step 2 - running the difference-in-difference analysis (4*5 models) #
+
+################### EASTERN ##################
+# Publications
+eastern_did_model_pfull <- att_gt(yname = "p_full_yearsum",
+                                    gname = "moving_year_plus1",
+                                    idname = "cluster_id",
+                                    tname = "career_year_plus_1",
+                                    xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                    data = easterncountries_matched_dataset,
+                                    est_method = "dr",
+                                    control_group = "nevertreated",
+                                    anticipation = 1,
+                                    allow_unbalanced_panel = T) 
+
+eastern_did_model_pfull_dynamic_short <- aggte(eastern_did_model_pfull, type = "dynamic", min_e = -2, max_e = 2)
+summary(eastern_did_model_pfull_dynamic_short)
+eastern_p_full_did_plot <- ggdid(eastern_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Normalised citation score
+eastern_did_model_ncs <- att_gt(yname = "ncs_full_mean",
+                                  gname = "moving_year_plus1",
+                                  idname = "cluster_id",
+                                  tname = "career_year_plus_1",
+                                  xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                  data = easterncountries_matched_dataset,
+                                  est_method = "dr",
+                                  control_group = "nevertreated",
+                                  anticipation = 1,
+                                  allow_unbalanced_panel = T) 
+
+eastern_did_model_ncs_dynamic_short <- aggte(eastern_did_model_ncs, type = "dynamic", min_e = -2, max_e = 2)
+summary(eastern_did_model_ncs_dynamic_short)
+eastern_ncs_did_plot <- ggdid(eastern_did_model_ncs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Normalised journal score
+
+eastern_did_model_njs <- att_gt(yname = "njs_full_mean",
+                                gname = "moving_year_plus1",
+                                idname = "cluster_id",
+                                tname = "career_year_plus_1",
+                                xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                data = easterncountries_matched_dataset,
+                                est_method = "dr",
+                                control_group = "nevertreated",
+                                anticipation = 1,
+                                allow_unbalanced_panel = T) 
+
+eastern_did_model_njs_dynamic_short <- aggte(eastern_did_model_njs, type = "dynamic", min_e = -2, max_e = 2)
+summary(eastern_did_model_njs_dynamic_short)
+eastern_njs_did_plot <- ggdid(eastern_did_model_njs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Top journal papers
+eastern_did_model_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
+                                gname = "moving_year_plus1",
+                                idname = "cluster_id",
+                                tname = "career_year_plus_1",
+                                xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                data = easterncountries_matched_dataset,
+                                est_method = "dr",
+                                control_group = "nevertreated",
+                                anticipation = 1,
+                                allow_unbalanced_panel = T) 
+
+eastern_did_model_topjournals_dynamic_short <- aggte(eastern_did_model_topjournals, type = "dynamic", min_e = -2, max_e = 2)
+summary(eastern_did_model_topjournals_dynamic_short)
+eastern_topjournals_did_plot <- ggdid(eastern_did_model_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Top cited papers
+eastern_did_model_topcited <- att_gt(yname = "p_top_prop10_full_yearsum",
+                                        gname = "moving_year_plus1",
+                                        idname = "cluster_id",
+                                        tname = "career_year_plus_1",
+                                        xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                        data = easterncountries_matched_dataset,
+                                        est_method = "dr",
+                                        control_group = "nevertreated",
+                                        anticipation = 1,
+                                        allow_unbalanced_panel = T) 
+
+eastern_did_model_topcited_dynamic_short <- aggte(eastern_did_model_topcited, type = "dynamic", min_e = -2, max_e = 2)
+summary(eastern_did_model_topcited_dynamic_short)
+eastern_topcited_did_plot <- ggdid(eastern_did_model_topcited_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+################## NORTHERN ###########################
+# Publications
+northern_did_model_pfull <- att_gt(yname = "p_full_yearsum",
+                                  gname = "moving_year_plus1",
+                                  idname = "cluster_id",
+                                  tname = "career_year_plus_1",
+                                  xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                  data = northerncountries_matched_dataset,
+                                  est_method = "dr",
+                                  control_group = "nevertreated",
+                                  anticipation = 1,
+                                  allow_unbalanced_panel = T) 
+
+northern_did_model_pfull_dynamic_short <- aggte(northern_did_model_pfull, type = "dynamic", min_e = -2, max_e = 2)
+summary(northern_did_model_pfull_dynamic_short)
+northern_p_full_did_plot <- ggdid(northern_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Normalised citation score
+northern_did_model_ncs <- att_gt(yname = "ncs_full_mean",
+                                gname = "moving_year_plus1",
+                                idname = "cluster_id",
+                                tname = "career_year_plus_1",
+                                xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                data = northerncountries_matched_dataset,
+                                est_method = "dr",
+                                control_group = "nevertreated",
+                                anticipation = 1,
+                                allow_unbalanced_panel = T) 
+
+northern_did_model_ncs_dynamic_short <- aggte(northern_did_model_ncs, type = "dynamic", min_e = -2, max_e = 2)
+summary(northern_did_model_ncs_dynamic_short)
+northern_ncs_did_plot <- ggdid(northern_did_model_ncs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Normalised journal score
+
+northern_did_model_njs <- att_gt(yname = "njs_full_mean",
+                                gname = "moving_year_plus1",
+                                idname = "cluster_id",
+                                tname = "career_year_plus_1",
+                                xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                data = northerncountries_matched_dataset,
+                                est_method = "dr",
+                                control_group = "nevertreated",
+                                anticipation = 1,
+                                allow_unbalanced_panel = T) 
+
+northern_did_model_njs_dynamic_short <- aggte(northern_did_model_njs, type = "dynamic", min_e = -2, max_e = 2)
+summary(northern_did_model_njs_dynamic_short)
+northern_njs_did_plot <- ggdid(northern_did_model_njs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Top journal papers
+northern_did_model_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
+                                        gname = "moving_year_plus1",
+                                        idname = "cluster_id",
+                                        tname = "career_year_plus_1",
+                                        xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                        data = northerncountries_matched_dataset,
+                                        est_method = "dr",
+                                        control_group = "nevertreated",
+                                        anticipation = 1,
+                                        allow_unbalanced_panel = T) 
+
+northern_did_model_topjournals_dynamic_short <- aggte(northern_did_model_topjournals, type = "dynamic", min_e = -2, max_e = 2)
+summary(northern_did_model_topjournals_dynamic_short)
+northern_topjournals_did_plot <- ggdid(northern_did_model_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Top cited papers
+northern_did_model_topcited <- att_gt(yname = "p_top_prop10_full_yearsum",
+                                     gname = "moving_year_plus1",
+                                     idname = "cluster_id",
+                                     tname = "career_year_plus_1",
+                                     xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                     data = northerncountries_matched_dataset,
+                                     est_method = "dr",
+                                     control_group = "nevertreated",
+                                     anticipation = 1,
+                                     allow_unbalanced_panel = T) 
+
+northern_did_model_topcited_dynamic_short <- aggte(northern_did_model_topcited, type = "dynamic", min_e = -2, max_e = 2)
+summary(northern_did_model_topcited_dynamic_short)
+northern_topcited_did_plot <- ggdid(northern_did_model_topcited_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+################################## SOUTHERN #################################
+
+southern_did_model_pfull <- att_gt(yname = "p_full_yearsum",
+                                   gname = "moving_year_plus1",
+                                   idname = "cluster_id",
+                                   tname = "career_year_plus_1",
+                                   xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                   data = southerncountries_matched_dataset,
+                                   est_method = "dr",
+                                   control_group = "nevertreated",
+                                   anticipation = 1,
+                                   allow_unbalanced_panel = T) 
+
+southern_did_model_pfull_dynamic_short <- aggte(southern_did_model_pfull, type = "dynamic", min_e = -2, max_e = 2)
+summary(southern_did_model_pfull_dynamic_short)
+southern_p_full_did_plot <- ggdid(southern_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Normalised citation score
+southern_did_model_ncs <- att_gt(yname = "ncs_full_mean",
+                                 gname = "moving_year_plus1",
+                                 idname = "cluster_id",
+                                 tname = "career_year_plus_1",
+                                 xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                 data = southerncountries_matched_dataset,
+                                 est_method = "dr",
+                                 control_group = "nevertreated",
+                                 anticipation = 1,
+                                 allow_unbalanced_panel = T) 
+
+southern_did_model_ncs_dynamic_short <- aggte(southern_did_model_ncs, type = "dynamic", min_e = -2, max_e = 2)
+summary(southern_did_model_ncs_dynamic_short)
+southern_ncs_did_plot <- ggdid(southern_did_model_ncs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Normalised journal score
+
+southern_did_model_njs <- att_gt(yname = "njs_full_mean",
+                                 gname = "moving_year_plus1",
+                                 idname = "cluster_id",
+                                 tname = "career_year_plus_1",
+                                 xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                 data = southerncountries_matched_dataset,
+                                 est_method = "dr",
+                                 control_group = "nevertreated",
+                                 anticipation = 1,
+                                 allow_unbalanced_panel = T) 
+
+southern_did_model_njs_dynamic_short <- aggte(southern_did_model_njs, type = "dynamic", min_e = -2, max_e = 2)
+summary(southern_did_model_njs_dynamic_short)
+southern_njs_did_plot <- ggdid(southern_did_model_njs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Top journal papers
+southern_did_model_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
+                                         gname = "moving_year_plus1",
+                                         idname = "cluster_id",
+                                         tname = "career_year_plus_1",
+                                         xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                         data = southerncountries_matched_dataset,
+                                         est_method = "dr",
+                                         control_group = "nevertreated",
+                                         anticipation = 1,
+                                         allow_unbalanced_panel = T) 
+
+southern_did_model_topjournals_dynamic_short <- aggte(southern_did_model_topjournals, type = "dynamic", min_e = -2, max_e = 2)
+summary(southern_did_model_topjournals_dynamic_short)
+southern_topjournals_did_plot <- ggdid(southern_did_model_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Top cited papers
+southern_did_model_topcited <- att_gt(yname = "p_top_prop10_full_yearsum",
+                                      gname = "moving_year_plus1",
+                                      idname = "cluster_id",
+                                      tname = "career_year_plus_1",
+                                      xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                      data = southerncountries_matched_dataset,
+                                      est_method = "dr",
+                                      control_group = "nevertreated",
+                                      anticipation = 1,
+                                      allow_unbalanced_panel = T) 
+
+southern_did_model_topcited_dynamic_short <- aggte(southern_did_model_topcited, type = "dynamic", min_e = -2, max_e = 2)
+summary(southern_did_model_topcited_dynamic_short)
+southern_topcited_did_plot <- ggdid(southern_did_model_topcited_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+################################### WESTERN ##################################
+western_did_model_pfull <- att_gt(yname = "p_full_yearsum",
+                                   gname = "moving_year_plus1",
+                                   idname = "cluster_id",
+                                   tname = "career_year_plus_1",
+                                   xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                   data = westerncountries_matched_dataset,
+                                   est_method = "dr",
+                                   control_group = "nevertreated",
+                                   anticipation = 1,
+                                   allow_unbalanced_panel = T) 
+
+western_did_model_pfull_dynamic_short <- aggte(western_did_model_pfull, type = "dynamic", min_e = -2, max_e = 2)
+summary(western_did_model_pfull_dynamic_short)
+western_p_full_did_plot <- ggdid(western_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Normalised citation score
+western_did_model_ncs <- att_gt(yname = "ncs_full_mean",
+                                 gname = "moving_year_plus1",
+                                 idname = "cluster_id",
+                                 tname = "career_year_plus_1",
+                                 xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                 data = westerncountries_matched_dataset,
+                                 est_method = "dr",
+                                 control_group = "nevertreated",
+                                 anticipation = 1,
+                                 allow_unbalanced_panel = T) 
+
+western_did_model_ncs_dynamic_short <- aggte(western_did_model_ncs, type = "dynamic", min_e = -2, max_e = 2)
+summary(western_did_model_ncs_dynamic_short)
+western_ncs_did_plot <- ggdid(western_did_model_ncs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Normalised journal score
+
+western_did_model_njs <- att_gt(yname = "njs_full_mean",
+                                 gname = "moving_year_plus1",
+                                 idname = "cluster_id",
+                                 tname = "career_year_plus_1",
+                                 xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                 data = westerncountries_matched_dataset,
+                                 est_method = "dr",
+                                 control_group = "nevertreated",
+                                 anticipation = 1,
+                                 allow_unbalanced_panel = T) 
+
+western_did_model_njs_dynamic_short <- aggte(western_did_model_njs, type = "dynamic", min_e = -2, max_e = 2)
+summary(western_did_model_njs_dynamic_short)
+western_njs_did_plot <- ggdid(western_did_model_njs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Top journal papers
+western_did_model_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
+                                         gname = "moving_year_plus1",
+                                         idname = "cluster_id",
+                                         tname = "career_year_plus_1",
+                                         xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                         data = westerncountries_matched_dataset,
+                                         est_method = "dr",
+                                         control_group = "nevertreated",
+                                         anticipation = 1,
+                                         allow_unbalanced_panel = T) 
+
+western_did_model_topjournals_dynamic_short <- aggte(western_did_model_topjournals, type = "dynamic", min_e = -2, max_e = 2)
+summary(western_did_model_topjournals_dynamic_short)
+western_topjournals_did_plot <- ggdid(western_did_model_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#Top cited papers
+western_did_model_topcited <- att_gt(yname = "p_top_prop10_full_yearsum",
+                                      gname = "moving_year_plus1",
+                                      idname = "cluster_id",
+                                      tname = "career_year_plus_1",
+                                      xformla = ~1, #this package doesn't provide functionality to assess impact of covariates on outcomes. 
+                                      data = westerncountries_matched_dataset,
+                                      est_method = "dr",
+                                      control_group = "nevertreated",
+                                      anticipation = 1,
+                                      allow_unbalanced_panel = T) 
+
+western_did_model_topcited_dynamic_short <- aggte(western_did_model_topcited, type = "dynamic", min_e = -2, max_e = 2)
+summary(western_did_model_topcited_dynamic_short)
+western_topcited_did_plot <- ggdid(western_did_model_topcited_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+
+#####------- making a forest plot -------- #####
+region_ATTs <-  c("Publications", "Northern", northern_did_model_pfull_dynamic_short$overall.att, northern_did_model_pfull_dynamic_short$overall.att-1.96*northern_did_model_pfull_dynamic_short$overall.se,northern_did_model_pfull_dynamic_short$overall.att+1.96*northern_did_model_pfull_dynamic_short$overall.se) %>% 
+  rbind(c("Publications", "Eastern", eastern_did_model_pfull_dynamic_short$overall.att, eastern_did_model_pfull_dynamic_short$overall.att-1.96*eastern_did_model_pfull_dynamic_short$overall.se,eastern_did_model_pfull_dynamic_short$overall.att+1.96*eastern_did_model_pfull_dynamic_short$overall.se)) %>% 
+  rbind(c("Publications", "Southern", southern_did_model_pfull_dynamic_short$overall.att, southern_did_model_pfull_dynamic_short$overall.att-1.96*southern_did_model_pfull_dynamic_short$overall.se,southern_did_model_pfull_dynamic_short$overall.att+1.96*southern_did_model_pfull_dynamic_short$overall.se)) %>% 
+  rbind(c("Publications", "Western", western_did_model_pfull_dynamic_short$overall.att, western_did_model_pfull_dynamic_short$overall.att-1.96*western_did_model_pfull_dynamic_short$overall.se,western_did_model_pfull_dynamic_short$overall.att+1.96*western_did_model_pfull_dynamic_short$overall.se)) %>% 
+  rbind(c("Citation Score", "Northern", northern_did_model_ncs_dynamic_short$overall.att, northern_did_model_ncs_dynamic_short$overall.att-1.96*northern_did_model_ncs_dynamic_short$overall.se,northern_did_model_ncs_dynamic_short$overall.att+1.96*northern_did_model_ncs_dynamic_short$overall.se)) %>% 
+  rbind(c("Citation Score", "Eastern", eastern_did_model_ncs_dynamic_short$overall.att, eastern_did_model_ncs_dynamic_short$overall.att-1.96*eastern_did_model_ncs_dynamic_short$overall.se,eastern_did_model_ncs_dynamic_short$overall.att+1.96*eastern_did_model_ncs_dynamic_short$overall.se)) %>% 
+  rbind(c("Citation Score", "Southern", southern_did_model_ncs_dynamic_short$overall.att, southern_did_model_ncs_dynamic_short$overall.att-1.96*southern_did_model_ncs_dynamic_short$overall.se,southern_did_model_ncs_dynamic_short$overall.att+1.96*southern_did_model_ncs_dynamic_short$overall.se)) %>% 
+  rbind(c("Citation Score", "Western", western_did_model_ncs_dynamic_short$overall.att, western_did_model_ncs_dynamic_short$overall.att-1.96*western_did_model_ncs_dynamic_short$overall.se,western_did_model_ncs_dynamic_short$overall.att+1.96*western_did_model_ncs_dynamic_short$overall.se)) %>% 
+  rbind(c("Journal Score", "Northern", northern_did_model_njs_dynamic_short$overall.att, northern_did_model_njs_dynamic_short$overall.att-1.96*northern_did_model_njs_dynamic_short$overall.se,northern_did_model_njs_dynamic_short$overall.att+1.96*northern_did_model_njs_dynamic_short$overall.se)) %>% 
+  rbind(c("Journal Score", "Eastern", eastern_did_model_njs_dynamic_short$overall.att, eastern_did_model_njs_dynamic_short$overall.att-1.96*eastern_did_model_njs_dynamic_short$overall.se,eastern_did_model_njs_dynamic_short$overall.att+1.96*eastern_did_model_njs_dynamic_short$overall.se)) %>% 
+  rbind(c("Journal Score", "Southern", southern_did_model_njs_dynamic_short$overall.att, southern_did_model_njs_dynamic_short$overall.att-1.96*southern_did_model_njs_dynamic_short$overall.se,southern_did_model_njs_dynamic_short$overall.att+1.96*southern_did_model_njs_dynamic_short$overall.se)) %>% 
+  rbind(c("Journal Score", "Western", western_did_model_njs_dynamic_short$overall.att, western_did_model_njs_dynamic_short$overall.att-1.96*western_did_model_njs_dynamic_short$overall.se,western_did_model_njs_dynamic_short$overall.att+1.96*western_did_model_njs_dynamic_short$overall.se)) %>% 
+  rbind(c("Top Journals", "Northern", northern_did_model_topjournals_dynamic_short$overall.att, northern_did_model_topjournals_dynamic_short$overall.att-1.96*northern_did_model_topjournals_dynamic_short$overall.se,northern_did_model_topjournals_dynamic_short$overall.att+1.96*northern_did_model_topjournals_dynamic_short$overall.se)) %>% 
+  rbind(c("Top Journals", "Eastern", eastern_did_model_topjournals_dynamic_short$overall.att, eastern_did_model_topjournals_dynamic_short$overall.att-1.96*eastern_did_model_topjournals_dynamic_short$overall.se,eastern_did_model_topjournals_dynamic_short$overall.att+1.96*eastern_did_model_topjournals_dynamic_short$overall.se)) %>% 
+  rbind(c("Top Journals", "Southern", southern_did_model_topjournals_dynamic_short$overall.att, southern_did_model_topjournals_dynamic_short$overall.att-1.96*southern_did_model_topjournals_dynamic_short$overall.se,southern_did_model_topjournals_dynamic_short$overall.att+1.96*southern_did_model_topjournals_dynamic_short$overall.se)) %>% 
+  rbind(c("Top Journals", "Western", western_did_model_topjournals_dynamic_short$overall.att, western_did_model_topjournals_dynamic_short$overall.att-1.96*western_did_model_topjournals_dynamic_short$overall.se,western_did_model_topjournals_dynamic_short$overall.att+1.96*western_did_model_topjournals_dynamic_short$overall.se)) %>% 
+  rbind(c("Top Cited", "Northern", northern_did_model_topcited_dynamic_short$overall.att, northern_did_model_topcited_dynamic_short$overall.att-1.96*northern_did_model_topcited_dynamic_short$overall.se,northern_did_model_topcited_dynamic_short$overall.att+1.96*northern_did_model_topcited_dynamic_short$overall.se)) %>% 
+  rbind(c("Top Cited", "Eastern", eastern_did_model_topcited_dynamic_short$overall.att, eastern_did_model_topcited_dynamic_short$overall.att-1.96*eastern_did_model_topcited_dynamic_short$overall.se,eastern_did_model_topcited_dynamic_short$overall.att+1.96*eastern_did_model_topcited_dynamic_short$overall.se)) %>% 
+  rbind(c("Top Cited", "Southern", southern_did_model_topcited_dynamic_short$overall.att, southern_did_model_topcited_dynamic_short$overall.att-1.96*southern_did_model_topcited_dynamic_short$overall.se,southern_did_model_topcited_dynamic_short$overall.att+1.96*southern_did_model_topcited_dynamic_short$overall.se)) %>% 
+  rbind(c("Top Cited", "Western", western_did_model_topcited_dynamic_short$overall.att, western_did_model_topcited_dynamic_short$overall.att-1.96*western_did_model_topcited_dynamic_short$overall.se,western_did_model_topcited_dynamic_short$overall.att+1.96*western_did_model_topcited_dynamic_short$overall.se)) %>% 
+  as_tibble()
+  
+names(region_ATTs) <- c("Measure","Region","Estimate", "95% CI low", "95% CI high")
+
+region_ATTs <- region_ATTs %>% 
+  mutate(across("Estimate":"95% CI high", as.numeric),
+         Measure = factor(Measure, levels = rev(c("Publications", "Citation Score", "Journal Score", "Top Journals", "Top Cited"))),
+         Region = factor(Region, levels = rev(c("Northern", "Eastern", "Southern", "Western"))))
+
+
+#define colours for dots and bars
+dotCOLS = c("#a6d8f0","#f9b282", "pink", "lightgreen")
+barCOLS = c("#008fd5","#de6b35", "indianred2", "springgreen4")
+
+
+p <- ggplot(region_ATTs, aes(x=Measure, y=Estimate, ymin=`95% CI low`, ymax=`95% CI high`,col=Region,fill=Region)) + 
+  #specify position here
+  geom_linerange(size=5,position=position_dodge(width = 0.5)) +
+  geom_hline(yintercept=0, lty=2) +
+  #specify position here too
+  geom_point(size=3, shape=21, colour="white", stroke = 0.5,position=position_dodge(width = 0.5)) +
+  scale_fill_manual(values=barCOLS)+
+  scale_color_manual(values=dotCOLS)+
+  scale_x_discrete(name="Performance measure") +
+  scale_y_continuous(name="Performance improvement (ATT)") +
+  coord_flip() +
+  theme_minimal() +
+  guides(fill = guide_legend(reverse = TRUE), colour = guide_legend(reverse = T))
+p
+
+ggsave(p, filename = "plots/S13. ATT by region.pdf")
