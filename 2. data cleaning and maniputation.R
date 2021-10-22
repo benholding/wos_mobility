@@ -1,5 +1,6 @@
 load(file = "wos_data.RData") #loading data (imported using script 1.)
 pacman::p_load(tidyverse, cumstats)
+
 #########################################################################
 #########################################################################
 ########## GETTING A DATASET OF ALL ELIGIBLE AUTHORS IN EUROPE ########## 
@@ -16,6 +17,7 @@ pacman::p_load(tidyverse, cumstats)
 ####################################################################################
 
 length(unique(publication_list_all$cluster_id)) #at this point we have 525,892 researchers
+percentage_gender_inferable <- 1-mean(is.na(researcher_info$gender))
 
 step1 <- publication_list_all %>% #take the main dataset
   filter(order_of_publishing == 1) %>% #include only rows where it represents the earliest article for that author.
