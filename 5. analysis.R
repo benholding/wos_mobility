@@ -1,7 +1,7 @@
 #importing data and packages 
 load("matched_dataset.RData") #for those downloading the code, you should use load("data_to_be_shared.RData") instead 
 
-pacman::p_load(tidyverse, sjPlot, cowplot, did, lmerTest, ggpubr, interplot,mediation) #https://cran.r-project.org/web/packages/interplot/vignettes/interplot-vignette.html
+pacman::p_load(tidyverse, sjPlot, cowplot, did, lmerTest, ggpubr, interplot,mediation, effectsize) #https://cran.r-project.org/web/packages/interplot/vignettes/interplot-vignette.html
 detach("package:dplyr", unload = TRUE)
 library(dplyr)
 set.seed(5030)
@@ -26,6 +26,7 @@ did_model_pfull_dynamic_short <- aggte(did_model_pfull, type = "dynamic", min_e 
 summary(did_model_pfull_dynamic_short)
 p_full_did_plot <- ggdid(did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
 
+esc_B(b = did_model_pfull_dynamic_short$overall.att, sdy = sd(matched_dataset$p_full_yearsum),grp1n = did_model_pfull_dynamic_short$DIDparams$n/2, grp2n = did_model_pfull_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
 ## NORMALISED CITATION SCORE ##
 did_model_ncs_full_yearmean <- att_gt(yname = "ncs_full_mean",
@@ -44,6 +45,8 @@ did_model_ncs_full_dynamic_short <- aggte(did_model_ncs_full_yearmean, type = "d
 summary(did_model_ncs_full_dynamic_short)
 ncs_full_did_plot <- ggdid(did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Citation score (yearly mean)")
 
+esc_B(b = did_model_ncs_full_dynamic_short$overall.att, sdy = sd(matched_dataset$ncs_full_mean, na.rm=T),grp1n = did_model_ncs_full_dynamic_short$DIDparams$n/2, grp2n = did_model_ncs_full_dynamic_short$DIDparams$n/2,es.type = c("d"))
+
 ## NORMALISED JOURNAL SCORE ## 
 did_model_njs_full<- att_gt(yname = "njs_full_mean",
                                       gname = "moving_year_plus1",
@@ -60,6 +63,8 @@ did_model_njs_full<- att_gt(yname = "njs_full_mean",
 did_model_njs_full_dynamic_short <- aggte(did_model_njs_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_njs_full_dynamic_short)
 njs_full_did_plot <- ggdid(did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = " Journal score (yearly mean)")
+
+esc_B(b = did_model_njs_full_dynamic_short$overall.att, sdy = sd(matched_dataset$njs_full_mean, na.rm=T),grp1n = did_model_njs_full_dynamic_short$DIDparams$n/2, grp2n = did_model_njs_full_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
 
 ## NUMBER OF TOP JOURNALS (njs >2 ) ##
@@ -79,6 +84,8 @@ did_model_njs_topjournals_dynamic_short <- aggte(did_model_njs_topjournals, type
 summary(did_model_njs_topjournals_dynamic_short)
 njs_topjournals_did_plot <- ggdid(did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top journals (yearly sum njs>2)")
 
+esc_B(b = did_model_njs_topjournals_dynamic_short$overall.att, sdy = sd(matched_dataset$njs_full_over2_yearsum, na.rm=T),grp1n = did_model_njs_topjournals_dynamic_short$DIDparams$n/2, grp2n = did_model_njs_topjournals_dynamic_short$DIDparams$n/2,es.type = c("d"))
+
 ## NUMBER OF TOP CITED PAPERS ## 
 did_model_p_top_prop10_full<- att_gt(yname = "p_top_prop10_full_yearsum",
                             gname = "moving_year_plus1",
@@ -94,6 +101,8 @@ did_model_p_top_prop10_full<- att_gt(yname = "p_top_prop10_full_yearsum",
 did_model_p_top_prop10_full_dynamic_short <- aggte(did_model_p_top_prop10_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_p_top_prop10_full_dynamic_short)
 pp10_full_did_plot <- ggdid(did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top cited papers (yearly sum pp10%)")
+
+esc_B(b = did_model_p_top_prop10_full_dynamic_short$overall.att, sdy = sd(matched_dataset$p_top_prop10_full_yearsum, na.rm=T),grp1n = did_model_p_top_prop10_full_dynamic_short$DIDparams$n/2, grp2n = did_model_p_top_prop10_full_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
 ## MAKING A FIGURE OF THE DIFFERENCE-IN-DIFFERENCE RESULTS ##
 did_plot_grid <- ggarrange(p_full_did_plot, 
@@ -170,7 +179,7 @@ pfull_qs_moderation_plot <- interplot(m = pfull_qs, var1 = "post_move", var2 = "
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits = c(0.3,2), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5),labels=c("-2", "-1", "0", "1")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 pfull_pptop10_moderation_plot <- interplot(m = pfull_pptop10, var1 = "post_move", var2 = "gelman_difference_in_pptop10") + 
@@ -178,7 +187,7 @@ pfull_pptop10_moderation_plot <- interplot(m = pfull_pptop10, var1 = "post_move"
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits = c(0.3,2), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1),labels=c("-2", "0", "2")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 #Normalised citation score
@@ -190,7 +199,7 @@ ncs_full_qs_moderation_plot <- interplot(m = ncs_full_qs, var1 = "post_move", va
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits = c(-1.3, 2.7), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5),labels=c("-2", "-1", "0", "1")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 ncs_full_pptop10_moderation_plot <- interplot(m = ncs_full_pptop10, var1 = "post_move", var2 = "gelman_difference_in_pptop10") + 
@@ -198,7 +207,7 @@ ncs_full_pptop10_moderation_plot <- interplot(m = ncs_full_pptop10, var1 = "post
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits = c(-1.3, 2.7), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1),labels=c("-2", "0", "2")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 #normalised Journal score
@@ -210,7 +219,7 @@ njs_full_qs_moderation_plot <- interplot(m = njs_full_qs, var1 = "post_move", va
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits =c(-0.8, 1.7),expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5),labels=c("-2", "-1", "0", "1")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 njs_full_pptop10_moderation_plot <- interplot(m = njs_full_pptop10, var1 = "post_move", var2 = "gelman_difference_in_pptop10") + 
@@ -218,19 +227,19 @@ njs_full_pptop10_moderation_plot <- interplot(m = njs_full_pptop10, var1 = "post
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits =c(-0.8, 1.7),expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1),labels=c("-2", "0", "2")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 #Top journals
-njs_topjournals_qs <-  lmer(njs_full_over2_yearsum ~gelman_difference_in_qs_overall_score:post_move + post_move +career_year + gelman_origin_qs_overall_score_mean + (1|cluster_id), data = diffindiff_data_only_movers_qs_diff); summary(njs_topjournals_qs); plot_model(njs_topjournals_qs, type = "int")
-njs_topjournals_pptop10 <-  lmer(njs_full_over2_yearsum ~gelman_difference_in_pptop10:post_move + post_move + career_year + gelman_origin_pp_top10_mean + (1|cluster_id), data = diffindiff_data_only_movers_leiden_diff); summary(njs_topjournals_pptop10); plot_model(njs_topjournals_pptop10, type = "int")
+njs_topjournals_qs <-  lmer(njs_full_over2_yearsum ~gelman_difference_in_qs_overall_score:post_move + post_move +career_year + gelman_origin_qs_overall_score_mean + (1|cluster_id), data = diffindiff_data_only_movers_qs_diff); summary(njs_topjournals_qs); plot_model(njs_topjournals_qs, type = "int"); omega_squared(njs_topjournals_qs)
+njs_topjournals_pptop10 <-  lmer(njs_full_over2_yearsum ~gelman_difference_in_pptop10:post_move + post_move + career_year + gelman_origin_pp_top10_mean + (1|cluster_id), data = diffindiff_data_only_movers_leiden_diff); summary(njs_topjournals_pptop10); plot_model(njs_topjournals_pptop10, type = "int"); omega_squared(njs_topjournals_pptop10)
 
 njs_topjournals_qs_moderation_plot <- interplot(m = njs_topjournals_qs, var1 = "post_move", var2 = "gelman_difference_in_qs_overall_score") + 
   theme_bw() +
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits = c(-0.4,1.1), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5),labels=c("-2", "-1", "0", "1")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 njs_topjournals_pptop10_moderation_plot <- interplot(m = njs_topjournals_pptop10, var1 = "post_move", var2 = "gelman_difference_in_pptop10") + 
@@ -238,19 +247,19 @@ njs_topjournals_pptop10_moderation_plot <- interplot(m = njs_topjournals_pptop10
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits = c(-0.4,1.1), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1),labels=c("-2", "0", "2")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 # Top cited papers
-p_top_prop10_full_qs <-  lmer(p_top_prop10_full_yearsum ~gelman_difference_in_qs_overall_score:post_move + post_move +career_year + gelman_origin_qs_overall_score_mean + (1|cluster_id), data = diffindiff_data_only_movers_qs_diff); summary(p_top_prop10_full_qs); plot_model(p_top_prop10_full_qs, type = "int")
-p_top_prop10_full_pptop10 <-lmer(p_top_prop10_full_yearsum ~gelman_difference_in_pptop10:post_move + post_move + career_year + gelman_origin_pp_top10_mean + (1|cluster_id), data = diffindiff_data_only_movers_leiden_diff); summary(p_top_prop10_full_pptop10); plot_model(p_top_prop10_full_pptop10, type = "int")
+p_top_prop10_full_qs <-  lmer(p_top_prop10_full_yearsum ~gelman_difference_in_qs_overall_score:post_move + post_move +career_year + gelman_origin_qs_overall_score_mean + (1|cluster_id), data = diffindiff_data_only_movers_qs_diff); summary(p_top_prop10_full_qs); plot_model(p_top_prop10_full_qs, type = "int"); omega_squared(p_top_prop10_full_qs)
+p_top_prop10_full_pptop10 <-lmer(p_top_prop10_full_yearsum ~gelman_difference_in_pptop10:post_move + post_move + career_year + gelman_origin_pp_top10_mean + (1|cluster_id), data = diffindiff_data_only_movers_leiden_diff); summary(p_top_prop10_full_pptop10); plot_model(p_top_prop10_full_pptop10, type = "int"); omega_squared(p_top_prop10_full_pptop10)
 
 p_top_prop10_full_qs_moderation_plot <- interplot(m = p_top_prop10_full_qs, var1 = "post_move", var2 = "gelman_difference_in_qs_overall_score") + 
   theme_bw() +
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5),labels=c("-2", "-1", "0", "1")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 p_top_prop10_full_pptop10_moderation_plot <- interplot(m = p_top_prop10_full_pptop10, var1 = "post_move", var2 = "gelman_difference_in_pptop10") + 
@@ -258,7 +267,7 @@ p_top_prop10_full_pptop10_moderation_plot <- interplot(m = p_top_prop10_full_ppt
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1),labels=c("-2", "0", "2")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 #step 2c. Making a panel plot that contains all of the moderation analyses + histograms of the raw ranking_difference data
@@ -271,8 +280,7 @@ qs_difference_plot <- ggplot(diffindiff_data_only_movers_qs_diff %>% distinct(cl
         axis.title.y = element_blank(),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limit = c(0,125), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0))
-
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5),labels=c("-2", "-1", "0", "1"))
 
 leiden_difference_plot <- ggplot(diffindiff_data_only_movers_leiden_diff %>% distinct(cluster_id, .keep_all = T), aes(x = gelman_difference_in_pptop10)) + #histogram of difference in Leiden rankings
   geom_histogram() +
@@ -282,7 +290,7 @@ leiden_difference_plot <- ggplot(diffindiff_data_only_movers_leiden_diff %>% dis
         axis.title.y = element_blank(),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limit = c(0,125), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0))
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1),labels=c("-2", "0", "2"))
 
 interaction_plots_left <- ggarrange(pfull_qs_moderation_plot, #making the left half of the panel plot
           ncs_full_qs_moderation_plot, 
@@ -305,7 +313,7 @@ interaction_plots_right <- ggarrange(pfull_pptop10_moderation_plot, #making the 
 moderation_plot_grid <- # this makes the final panel plot of the moderation analyses
   ggarrange(interaction_plots_left, interaction_plots_right) %>% 
   annotate_figure(left = text_grob("Count                                                     Estimated Coefficient for moving to USA",rot = 90, size = 10, hjust = .56),
-                  bottom = text_grob("Standardised difference in ranking score (positive = USA higher ranked)", size = 10))
+                  bottom = text_grob("Standard deviation change in ranking score (Positive = USA higher ranked)", size = 10))
 ggexport(moderation_plot_grid, filename = "plots/Fig3. Moderation.pdf") #saving the plot
 
 # step 2d. Creating tables of the modeation results
