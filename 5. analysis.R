@@ -24,7 +24,7 @@ did_model_pfull <- att_gt(yname = "p_full_yearsum",
 
 did_model_pfull_dynamic_short <- aggte(did_model_pfull, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_pfull_dynamic_short)
-p_full_did_plot <- ggdid(did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+p_full_did_plot <- ggdid(did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Δ Sum", title = "Publications (yearly sum)")
 
 esc_B(b = did_model_pfull_dynamic_short$overall.att, sdy = sd(matched_dataset$p_full_yearsum),grp1n = did_model_pfull_dynamic_short$DIDparams$n/2, grp2n = did_model_pfull_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
@@ -43,7 +43,7 @@ did_model_ncs_full_yearmean <- att_gt(yname = "ncs_full_mean",
 
 did_model_ncs_full_dynamic_short <- aggte(did_model_ncs_full_yearmean, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_ncs_full_dynamic_short)
-ncs_full_did_plot <- ggdid(did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Citation score (yearly mean)")
+ncs_full_did_plot <- ggdid(did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Δ Mean", title = "Citation score (yearly mean)")
 
 esc_B(b = did_model_ncs_full_dynamic_short$overall.att, sdy = sd(matched_dataset$ncs_full_mean, na.rm=T),grp1n = did_model_ncs_full_dynamic_short$DIDparams$n/2, grp2n = did_model_ncs_full_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
@@ -62,7 +62,7 @@ did_model_njs_full<- att_gt(yname = "njs_full_mean",
 
 did_model_njs_full_dynamic_short <- aggte(did_model_njs_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_njs_full_dynamic_short)
-njs_full_did_plot <- ggdid(did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = " Journal score (yearly mean)")
+njs_full_did_plot <- ggdid(did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Δ Mean", title = " Journal score (yearly mean)")
 
 esc_B(b = did_model_njs_full_dynamic_short$overall.att, sdy = sd(matched_dataset$njs_full_mean, na.rm=T),grp1n = did_model_njs_full_dynamic_short$DIDparams$n/2, grp2n = did_model_njs_full_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
@@ -82,7 +82,7 @@ did_model_njs_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
 
 did_model_njs_topjournals_dynamic_short <- aggte(did_model_njs_topjournals, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_njs_topjournals_dynamic_short)
-njs_topjournals_did_plot <- ggdid(did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top journals (yearly sum njs>2)")
+njs_topjournals_did_plot <- ggdid(did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Δ Sum", title = "Top journals (yearly sum njs>2)")
 
 esc_B(b = did_model_njs_topjournals_dynamic_short$overall.att, sdy = sd(matched_dataset$njs_full_over2_yearsum, na.rm=T),grp1n = did_model_njs_topjournals_dynamic_short$DIDparams$n/2, grp2n = did_model_njs_topjournals_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
@@ -100,7 +100,7 @@ did_model_p_top_prop10_full<- att_gt(yname = "p_top_prop10_full_yearsum",
 
 did_model_p_top_prop10_full_dynamic_short <- aggte(did_model_p_top_prop10_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_p_top_prop10_full_dynamic_short)
-pp10_full_did_plot <- ggdid(did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top cited papers (yearly sum pp10%)")
+pp10_full_did_plot <- ggdid(did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Δ Sum", title = "Top cited papers (yearly sum pp10%)")
 
 esc_B(b = did_model_p_top_prop10_full_dynamic_short$overall.att, sdy = sd(matched_dataset$p_top_prop10_full_yearsum, na.rm=T),grp1n = did_model_p_top_prop10_full_dynamic_short$DIDparams$n/2, grp2n = did_model_p_top_prop10_full_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
@@ -298,7 +298,11 @@ interaction_plots_left <- ggarrange(pfull_qs_moderation_plot, #making the left h
           njs_topjournals_qs_moderation_plot, 
           p_top_prop10_full_qs_moderation_plot,
           qs_difference_plot,
-          common.legend = T, legend = "bottom", ncol=1,nrow=6, labels = "auto",hjust = -3, vjust = 2,align = "v") %>% 
+          common.legend = T, legend = "bottom", ncol=1,nrow=6, 
+          labels = c("a. Publications", "b. Citation Score", "c. Journal Score", "d. Top journal publications", "e. Top cited publications", "f. Ranking change"),
+          hjust = -0.1, vjust = -0.1,
+          align = "hv",
+          font.label = list(size = 10, color = "black", face = "bold.italic", family = NULL)) %>% 
   annotate_figure(top = text_grob("QS", face = "bold"))
 
 interaction_plots_right <- ggarrange(pfull_pptop10_moderation_plot, #making the right half of the panel plot
@@ -312,7 +316,7 @@ interaction_plots_right <- ggarrange(pfull_pptop10_moderation_plot, #making the 
 
 moderation_plot_grid <- # this makes the final panel plot of the moderation analyses
   ggarrange(interaction_plots_left, interaction_plots_right) %>% 
-  annotate_figure(left = text_grob("Count                                                     Estimated Coefficient for moving to USA",rot = 90, size = 10, hjust = .56),
+  annotate_figure(left = text_grob("Count                                             Estimated Coefficient for effect of moving to USA",rot = 90, size = 10, hjust = .56),
                   bottom = text_grob("Standard deviation change in ranking score (Positive = USA higher ranked)", size = 10))
 ggexport(moderation_plot_grid, filename = "plots/Fig3. Moderation.pdf") #saving the plot
 
@@ -439,3 +443,6 @@ mediation_table <- c("", "", "publications","", "", "ncs","", "", "njs","", "", 
   unite(col = "pptop10_CI",V16:V17, sep = ", ")
 
 write.csv(mediation_table, "tables/table4. mediation table.csv")
+
+
+

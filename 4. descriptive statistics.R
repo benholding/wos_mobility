@@ -1,4 +1,4 @@
-load("matched_dataset.RData")
+load("matched_dataset.RData") #for those downloading the code, you should use load("data_to_be_shared.RData") instead 
 pacman::p_load(cowplot, dplyr, vioplot, ggplot2)
 ##################################################
 ############# DESCRIPTIVE STATISTICS #############
@@ -48,6 +48,11 @@ raw_data_plots_means_per_year <- matched_dataset %>%
             mean_njs_full_mean = mean(njs_full_mean, na.rm=T),
             mean_njs_full_over2_yearsum = mean(njs_full_over2_yearsum),
             mean_p_top_prop10_full_yearsum =mean(p_top_prop10_full_yearsum),
+            median_p_full = median(p_full_yearsum),
+            median_ncs_full_mean = median(ncs_full_mean, na.rm=T),
+            median_njs_full_mean = median(njs_full_mean, na.rm=T),
+            median_njs_full_over2_yearsum = median(njs_full_over2_yearsum),
+            median_p_top_prop10_full_yearsum =median(p_top_prop10_full_yearsum),
             sd_p_full = sd(p_full_yearsum),
             sd_ncs_full_mean = sd(ncs_full_mean, na.rm=T),
             sd_mean_njs_full_mean = sd(njs_full_mean, na.rm = T),
@@ -65,6 +70,7 @@ raw_data_plots_means_per_year <- matched_dataset %>%
 aa <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affilation,mean_p_full, group = condition, colour = condition, shape = condition)) +
   geom_point(size = 5) +
   geom_line(size = 2) +
+  geom_line(data = raw_data_plots_means_per_year, aes(years_from_obtaining_usa_affilation,median_p_full), linetype = "dotted", size = 1, position = position_jitter(w=0.05, h=0),alpha = 0.6) +
   geom_errorbar(aes(ymin = mean_p_full-se_p_full, ymax = mean_p_full+se_p_full), width = 0.2) +
   theme_classic()+
   theme(axis.text=element_text(size=rel(2)), 
@@ -75,7 +81,8 @@ aa <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affila
   scale_color_manual(values=c("palevioletred","lightblue")) +
   ylab("Mean (SE) number of publications") +
   xlab("Years from move") +
-  scale_x_continuous(breaks = seq(-5,2,1))
+  scale_x_continuous(breaks = seq(-5,2,1)) +
+  scale_y_continuous(limits = c(1, 3.5))
 
 par(cex.axis=1.2, cex.lab = 1.2,mar = c(2, 4, 0.1, 0.1))
 vioplot(log(p_full_yearsum+1) ~ years_from_obtaining_usa_affilation, data = controls_data_forplots, h = 0.1, col = "lightblue", plotCentre = "line", 
@@ -100,6 +107,7 @@ cowplot::save_plot("plots/S1_raw_p_full.pdf", test2, base_height = 9)
 bb <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affilation,mean_ncs_full_mean, group = condition, colour = condition, shape = condition)) +
   geom_point(size = 5) +
   geom_line(size = 2) +
+  geom_line(data = raw_data_plots_means_per_year, aes(years_from_obtaining_usa_affilation,median_ncs_full_mean), linetype = "dotted", size = 1, position = position_jitter(w=0.05, h=0),alpha = 0.6) +
   geom_errorbar(aes(ymin = mean_ncs_full_mean-se_ncs_full_mean, ymax = mean_ncs_full_mean+se_ncs_full_mean), width = 0.2) +
   theme_classic()+
   theme(axis.text=element_text(size=rel(2)), 
@@ -111,7 +119,7 @@ bb <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affila
   ylab("Mean (SE) normalised citation score") +
   xlab("Years from move") +
   scale_x_continuous(breaks = seq(-5,2,1))+
-  scale_y_continuous(limits = c(1.25, 2.75))
+  scale_y_continuous(limits = c(0.75, 3.4))
 
 vioplot(log(ncs_full_mean+1) ~ years_from_obtaining_usa_affilation, data = controls_data_forplots, h = 0.1, col = "lightblue", plotCentre = "line", 
         side = "left", ylim = c(0, 3), areaEqual = F,rectCol=NA,lineCol = NA, xlab  =NA, ylab = "log(mean ncs per individual +1)")
@@ -133,6 +141,7 @@ cowplot::save_plot("plots/S2_raw_ncs_full.pdf", ncs_jointplot, base_height = 9)
 cc <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affilation,mean_njs_full_mean, group = condition, colour = condition, shape = condition)) +
   geom_point(size = 5) +
   geom_line(size = 2) +
+  geom_line(data = raw_data_plots_means_per_year, aes(years_from_obtaining_usa_affilation,median_njs_full_mean), linetype = "dotted", size = 1, position = position_jitter(w=0.05, h=0),alpha = 0.6) +
   geom_errorbar(aes(ymin = mean_njs_full_mean-se_mean_njs_full_mean, ymax = mean_njs_full_mean+se_mean_njs_full_mean),width = 0.2) +
   theme_classic()+
   theme(axis.text=element_text(size=rel(2)), 
@@ -144,7 +153,7 @@ cc <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affila
   ylab("Mean (SE) normalised journal score") +
   xlab("Years from move") +
   scale_x_continuous(breaks = seq(-5,2,1)) +
-  scale_y_continuous(limits = c(1.25, 2.15))
+  scale_y_continuous(limits = c(1, 2.6))
 
 vioplot(log(njs_full_mean+1) ~ years_from_obtaining_usa_affilation, data = controls_data_forplots, h = 0.1, col = "lightblue", plotCentre = "line", 
         side = "left", ylim = c(0, 3), areaEqual = F,rectCol=NA,lineCol = NA, xlab  =NA, ylab = "log(mean njs per individual +1)")
@@ -167,6 +176,7 @@ cowplot::save_plot("plots/S3_raw_njs.pdf", njs_jointplot, base_height = 9)
 dd <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affilation,mean_njs_full_over2_yearsum, group = condition, colour = condition, shape = condition)) +
   geom_point(size = 5) +
   geom_line(size = 2) +
+  geom_line(data = raw_data_plots_means_per_year, aes(years_from_obtaining_usa_affilation,median_njs_full_over2_yearsum), linetype = "dotted", size = 1, position = position_jitter(w=0.05, h=0),alpha = 0.6) +
   geom_errorbar(aes(ymin = mean_njs_full_over2_yearsum-se_njs_full_over2_yearsum, ymax = mean_njs_full_over2_yearsum+se_njs_full_over2_yearsum),width = 0.2) +
   theme_classic()+
   theme(axis.text=element_text(size=rel(2)), 
@@ -177,7 +187,8 @@ dd <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affila
   scale_color_manual(values=c("palevioletred","lightblue")) +
   ylab("Mean (SE) sum of top journal publications (njs > 2)") +
   xlab("Years from move") +
-  scale_x_continuous(breaks = seq(-5,2,1))
+  scale_x_continuous(breaks = seq(-5,2,1)) +
+  scale_y_continuous(limits = c(0, 1))
 
 vioplot(log(njs_full_over2_yearsum+1) ~ years_from_obtaining_usa_affilation, data = controls_data_forplots, h = 0.1, col = "lightblue", plotCentre = "line", 
         side = "left", ylim = c(0, 3), areaEqual = F,rectCol=NA,lineCol = NA, xlab  =NA, ylab = "log (sum (njs > 2) + 1)")
@@ -189,7 +200,7 @@ plot(0)
 test_dd
 
 topjournal_jointplot <- ggdraw(dd) +
-  draw_plot(test_dd, .15, 0.55, width = 0.35, height = 0.4) +
+  draw_plot(test_dd, .17, 0.55, width = 0.35, height = 0.4) +
   draw_plot_label(label = c("A", "B"), size = 25,
                   x = c(0, 0.12), y = c(1, 1))
 
@@ -201,6 +212,7 @@ cowplot::save_plot("plots/S4_raw_topjournals.pdf", topjournal_jointplot, base_he
 ee <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affilation,mean_p_top_prop10_full_yearsum, group = condition, colour = condition, shape = condition)) +
   geom_point(size = 5) +
   geom_line(size = 2) +
+  geom_line(data = raw_data_plots_means_per_year, aes(years_from_obtaining_usa_affilation,median_p_top_prop10_full_yearsum), linetype = "dotted", size = 1, position = position_jitter(w=0.05, h=0),alpha = 0.6) +
   geom_errorbar(aes(ymin = mean_p_top_prop10_full_yearsum-se_mean_p_top_prop10_full_yearsum, ymax = mean_p_top_prop10_full_yearsum+se_mean_p_top_prop10_full_yearsum),width = 0.2) +
   theme_classic()+
   theme(axis.text=element_text(size=rel(2)), 
@@ -211,7 +223,8 @@ ee <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affila
   scale_color_manual(values=c("palevioletred","lightblue")) +
   ylab("Mean (SE) sum of top10% most cited papers in field") +
   xlab("Years from move") +
-  scale_x_continuous(breaks = seq(-5,2,1))
+  scale_x_continuous(breaks = seq(-5,2,1))+
+  scale_y_continuous(limits = c(0, 1))
 
 vioplot(log(p_top_prop10_full_yearsum+1) ~ years_from_obtaining_usa_affilation, h = 0.1, data = controls_data_forplots, col = "lightblue", plotCentre = "line", 
         side = "left", ylim = c(0, 3), areaEqual = F,rectCol=NA,lineCol = NA, xlab  =NA, ylab = "log (sum (pptop10) + 1)")
@@ -224,7 +237,7 @@ plot(0)
 test_ee
 
 pp10_jointplot <- ggdraw(ee) +
-  draw_plot(test_ee, .15, 0.55, width = 0.35, height = 0.4) +
+  draw_plot(test_ee, .165, 0.55, width = 0.35, height = 0.4) +
   draw_plot_label(label = c("A", "B"), size = 25,
                   x = c(0, 0.12), y = c(1, 1))
 
