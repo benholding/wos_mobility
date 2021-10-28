@@ -79,7 +79,7 @@ aa <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affila
         legend.position="bottom",
         legend.title = element_blank()) +
   scale_color_manual(values=c("palevioletred","lightblue")) +
-  ylab("Mean (SE) number of publications") +
+  ylab("Average (SE) number of publications") +
   xlab("Years from move") +
   scale_x_continuous(breaks = seq(-5,2,1)) +
   scale_y_continuous(limits = c(1, 3.5))
@@ -116,7 +116,7 @@ bb <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affila
         legend.position="bottom",
         legend.title = element_blank()) +
   scale_color_manual(values=c("palevioletred","lightblue")) +
-  ylab("Mean (SE) normalised citation score") +
+  ylab("Average (SE) normalised citation score") +
   xlab("Years from move") +
   scale_x_continuous(breaks = seq(-5,2,1))+
   scale_y_continuous(limits = c(0.75, 3.4))
@@ -150,7 +150,7 @@ cc <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affila
         legend.position="bottom",
         legend.title = element_blank()) +
   scale_color_manual(values=c("palevioletred","lightblue")) +
-  ylab("Mean (SE) normalised journal score") +
+  ylab("Average (SE) normalised journal score") +
   xlab("Years from move") +
   scale_x_continuous(breaks = seq(-5,2,1)) +
   scale_y_continuous(limits = c(1, 2.6))
@@ -185,7 +185,7 @@ dd <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affila
         legend.position="bottom",
         legend.title = element_blank()) +
   scale_color_manual(values=c("palevioletred","lightblue")) +
-  ylab("Mean (SE) sum of top journal publications (njs > 2)") +
+  ylab("Average (SE) sum of top journal publications (njs > 2)") +
   xlab("Years from move") +
   scale_x_continuous(breaks = seq(-5,2,1)) +
   scale_y_continuous(limits = c(0, 1))
@@ -221,7 +221,7 @@ ee <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affila
         legend.position="bottom",
         legend.title = element_blank()) +
   scale_color_manual(values=c("palevioletred","lightblue")) +
-  ylab("Mean (SE) sum of top10% most cited papers in field") +
+  ylab("Average (SE) sum of top10% most cited papers") +
   xlab("Years from move") +
   scale_x_continuous(breaks = seq(-5,2,1))+
   scale_y_continuous(limits = c(0, 1))

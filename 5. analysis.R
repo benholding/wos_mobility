@@ -1,7 +1,7 @@
 #importing data and packages 
 load("matched_dataset.RData") #for those downloading the code, you should use load("data_to_be_shared.RData") instead 
 
-pacman::p_load(tidyverse, sjPlot, cowplot, did, lmerTest, ggpubr, interplot,mediation, effectsize) #https://cran.r-project.org/web/packages/interplot/vignettes/interplot-vignette.html
+pacman::p_load(tidyverse, sjPlot, cowplot, did, lmerTest, ggpubr, interplot,mediation, effectsize,esc) #https://cran.r-project.org/web/packages/interplot/vignettes/interplot-vignette.html
 detach("package:dplyr", unload = TRUE)
 library(dplyr)
 set.seed(5030)
@@ -24,7 +24,7 @@ did_model_pfull <- att_gt(yname = "p_full_yearsum",
 
 did_model_pfull_dynamic_short <- aggte(did_model_pfull, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_pfull_dynamic_short)
-p_full_did_plot <- ggdid(did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Δ Sum", title = "Publications (yearly sum)")
+p_full_did_plot <- ggdid(did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
 
 esc_B(b = did_model_pfull_dynamic_short$overall.att, sdy = sd(matched_dataset$p_full_yearsum),grp1n = did_model_pfull_dynamic_short$DIDparams$n/2, grp2n = did_model_pfull_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
@@ -43,7 +43,7 @@ did_model_ncs_full_yearmean <- att_gt(yname = "ncs_full_mean",
 
 did_model_ncs_full_dynamic_short <- aggte(did_model_ncs_full_yearmean, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_ncs_full_dynamic_short)
-ncs_full_did_plot <- ggdid(did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Δ Mean", title = "Citation score (yearly mean)")
+ncs_full_did_plot <- ggdid(did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Citation score (yearly mean)")
 
 esc_B(b = did_model_ncs_full_dynamic_short$overall.att, sdy = sd(matched_dataset$ncs_full_mean, na.rm=T),grp1n = did_model_ncs_full_dynamic_short$DIDparams$n/2, grp2n = did_model_ncs_full_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
@@ -62,7 +62,7 @@ did_model_njs_full<- att_gt(yname = "njs_full_mean",
 
 did_model_njs_full_dynamic_short <- aggte(did_model_njs_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_njs_full_dynamic_short)
-njs_full_did_plot <- ggdid(did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Δ Mean", title = " Journal score (yearly mean)")
+njs_full_did_plot <- ggdid(did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = " Journal score (yearly mean)")
 
 esc_B(b = did_model_njs_full_dynamic_short$overall.att, sdy = sd(matched_dataset$njs_full_mean, na.rm=T),grp1n = did_model_njs_full_dynamic_short$DIDparams$n/2, grp2n = did_model_njs_full_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
@@ -82,7 +82,7 @@ did_model_njs_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
 
 did_model_njs_topjournals_dynamic_short <- aggte(did_model_njs_topjournals, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_njs_topjournals_dynamic_short)
-njs_topjournals_did_plot <- ggdid(did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Δ Sum", title = "Top journals (yearly sum njs>2)")
+njs_topjournals_did_plot <- ggdid(did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top journals (yearly sum njs>2)")
 
 esc_B(b = did_model_njs_topjournals_dynamic_short$overall.att, sdy = sd(matched_dataset$njs_full_over2_yearsum, na.rm=T),grp1n = did_model_njs_topjournals_dynamic_short$DIDparams$n/2, grp2n = did_model_njs_topjournals_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
@@ -100,7 +100,7 @@ did_model_p_top_prop10_full<- att_gt(yname = "p_top_prop10_full_yearsum",
 
 did_model_p_top_prop10_full_dynamic_short <- aggte(did_model_p_top_prop10_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_p_top_prop10_full_dynamic_short)
-pp10_full_did_plot <- ggdid(did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Δ Sum", title = "Top cited papers (yearly sum pp10%)")
+pp10_full_did_plot <- ggdid(did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top cited papers (yearly sum pp10%)")
 
 esc_B(b = did_model_p_top_prop10_full_dynamic_short$overall.att, sdy = sd(matched_dataset$p_top_prop10_full_yearsum, na.rm=T),grp1n = did_model_p_top_prop10_full_dynamic_short$DIDparams$n/2, grp2n = did_model_p_top_prop10_full_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
