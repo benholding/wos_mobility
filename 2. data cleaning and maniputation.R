@@ -234,7 +234,7 @@ step10 <- step9 %>%
 length(unique(step10$cluster_id)) #4768
 length(unique(step9$cluster_id)) -length(unique(step10$cluster_id)) #change = 612
 ######################################################################################
-# STEP ELEVEN: Exclude researchers were at the USA destination for less than 2 years #
+# STEP ELEVEN: Exclude researchers were at the USA destination for least than 2 years #
 ######################################################################################
 
 step11 <- step10 %>%  
@@ -276,6 +276,22 @@ step13 <- step12 %>%
 
 length(unique(step13$cluster_id)) #2598
 length(unique(step12$cluster_id)) -length(unique(step13$cluster_id)) #change = 124
+
+######################################################################
+# STEP FOURTEEN: Excluding researchers that take long breaks #
+######################################################################
+
+step14_prestep <- step13 %>% 
+  arrange(cluster_id, order_of_publishing) %>% 
+  group_by(cluster_id) %>% 
+  mutate(year_diff = pub_year-lag(pub_year)) %>% 
+  filter(year_diff >= 4) %>% 
+  distinct(cluster_id)
+
+step14 <-  anti_join(step13, step14_prestep, by = "cluster_id")
+
+length(unique(step14$cluster_id)) #2368
+length(unique(step13$cluster_id)) -length(unique(step14$cluster_id)) #change = 230
 ###################################################################################################################
 # STEP FORTEEN: Calculate QS/Leiden ranking difference from origin to destination and make final movers dataset #
 ###################################################################################################################
@@ -298,27 +314,27 @@ mean_leiden_ranking <- leiden_ranking %>% select(wos_name, Period, PP_top10,lr_u
   mutate(pp_top10_mean_quantile = 21-ntile(pp_top10_mean, 20))
 
 leiden_pp10_our_institutes <- 
-  step13 %>% 
+  step14 %>% 
   distinct(lr_univ_id) %>% 
   filter(!is.na(lr_univ_id)) %>% 
   left_join(mean_leiden_ranking, by = "lr_univ_id") %>% 
   select(wos_name, pp_top10_mean, pp_top10_mean_quantile)
 
-origin_institution_rankings_and_type  <- step13 %>% distinct(origin_institution) %>% 
+origin_institution_rankings_and_type  <- step14 %>% distinct(origin_institution) %>% 
   left_join(institute_grid_ids, by = c("origin_institution" = "wos_institute_name")) %>%  #add QS ranking for year they moved to USA
   left_join(mean_qs_ranking, by = c("grid_id" = "grid_id")) %>% 
   left_join(leiden_pp10_our_institutes, by = c("origin_institution"= "wos_name")) %>% 
   rename_with(.fn = ~ paste0("origin_", .x)) %>% 
   select(origin_institution = origin_origin_institution, everything())
 
-USA_institution_rankings_and_type <- step13 %>% distinct(USA_institution) %>% 
+USA_institution_rankings_and_type <- step14 %>% distinct(USA_institution) %>% 
   left_join(institute_grid_ids, by = c("USA_institution" = "wos_institute_name")) %>%  #add QS ranking for year they moved to USA
   left_join(mean_qs_ranking, by = c("grid_id" = "grid_id")) %>% 
   left_join(leiden_pp10_our_institutes, by = c("USA_institution"= "wos_name")) %>% 
   rename_with(.fn = ~ paste0("USA_", .x)) %>% 
   select(USA_institution = USA_USA_institution, everything())
 
-movers_dataset_final <- step13 %>% 
+movers_dataset_final <- step14 %>% 
   left_join(origin_institution_rankings_and_type, by = "origin_institution") %>% 
   left_join(USA_institution_rankings_and_type, by ="USA_institution") %>% 
   mutate(#difference_in_qs_overall_score = origin_qs_overall_score_mean-USA_qs_overall_score_mean,
@@ -330,8 +346,8 @@ movers_dataset_final <- step13 %>%
          gelman_difference_in_pptop10 = effectsize::standardize(USA_pp_top10_mean-origin_pp_top10_mean, two_sd=T)) #a higher score represents moving upwards
   
 #how many eligible movers to USA do have?
-length(unique(movers_dataset_final$cluster_id)) #2598
-9140-length(unique(movers_dataset_final$cluster_id)) #excluded USA movers = 6542
+length(unique(movers_dataset_final$cluster_id)) #2368
+9140-length(unique(movers_dataset_final$cluster_id)) #excluded USA movers = 6772
 movers_dataset_final %>% distinct(cluster_id, .keep_all = T) %>% pull(move_to_USA_publication_order) %>% table()
 movers_dataset_final %>% distinct(cluster_id, .keep_all = T) %>% pull(discipline) %>% table()
 table(movers_dataset_final %>% distinct(cluster_id, .keep_all = T) %>% pull(origin_country))  
@@ -364,7 +380,6 @@ stayers_dataset <- final_complete_dataset %>%
 length(unique(stayers_dataset$cluster_id)) #145313
 (length(unique(final_complete_dataset$cluster_id))-9140)-length(unique(stayers_dataset$cluster_id)) # how many non-movers, after removing non USA, were excluded because they moved to another countries
 
-
 stayers_dataset_2 <- stayers_dataset %>% 
   filter(!is.na(gender))
 
@@ -374,11 +389,23 @@ length(unique(stayers_dataset$cluster_id)) -length(unique(stayers_dataset_2$clus
 stayers_dataset_3 <- stayers_dataset_2 %>% 
   group_by(cluster_id) %>% 
   mutate(total_number_of_articles = n_distinct(ut)) %>% 
-  filter(total_number_of_articles >= 4)
+  filter(total_number_of_articles >= 4) %>% 
+  ungroup()
 
-length(unique(stayers_dataset_3$cluster_id)) #84092
-length(unique(stayers_dataset_2$cluster_id)) -length(unique(stayers_dataset_3$cluster_id)) #11881 matches lost
+length(unique(stayers_dataset_3$cluster_id)) #118270
+length(unique(stayers_dataset_2$cluster_id)) -length(unique(stayers_dataset_3$cluster_id)) #17469 matches lost
 
+problem <- stayers_dataset_3 %>% 
+  arrange(cluster_id, order_of_publishing) %>% 
+  group_by(cluster_id) %>% 
+  mutate(year_diff = pub_year-lag(pub_year)) %>% 
+  filter(year_diff >= 4) %>% 
+  distinct(cluster_id)  #removing those stayers who have longer than 3 years break between papers (to ensure we don't end up just comparing permanent vs temporary academics)
+
+stayers_dataset_4 <-  anti_join(stayers_dataset_3, problem, by = "cluster_id")
+
+length(unique(stayers_dataset_4$cluster_id)) #87668
+length(unique(stayers_dataset_3$cluster_id)) -length(unique(stayers_dataset_4$cluster_id)) # 30602 matches lost
 
 #########################################################################################################
 #########################################################################################################
@@ -468,7 +495,17 @@ cumulative_researcher_performance_years <-
 # The main datasets we get out of this script that are used later on are:
 # 1. final_complete_dataset - contains all descriptive information about potential researchers to be included in the analysis (both movers and stayers) + UTs
 # 2. movers_dataset_final - contains all descriptive information about movers + UTs + ranking information [most important info is probably just the cluster_ids]
-# 3. stayers_dataset_3 - contains all descriptive information about eligable "stayers" + UTs [most important info is probably just the cluster_ids]
+# 3. stayers_dataset_4 - contains all descriptive information about eligable "stayers" + UTs [most important info is probably just the cluster_ids]
 # 4. researcher_performance_years - for all researchers in final_complete_dataset, this contains per-career-year performance information
 # 5. cumulative_researcher_performance_years - for all researchers in final_complete_dataset, this contains CUMULATIVE performance information per career year.
 ###################
+
+save(final_complete_dataset,
+     movers_dataset_final,
+     stayers_dataset_4,
+     researcher_performance_years,
+     cumulative_researcher_performance_years,
+     european_country_list,
+     file = "for_matching.RData")
+
+

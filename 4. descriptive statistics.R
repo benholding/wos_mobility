@@ -4,16 +4,16 @@ pacman::p_load(cowplot, dplyr, vioplot, ggplot2)
 ############# DESCRIPTIVE STATISTICS #############
 ##################################################
 
-dim(matched_dataset) #54000 years of data
-dim(matched_dataset %>% filter(career_over == F)) #46785 years of actual career
-n_distinct(matched_dataset$cluster_id) #4500 resarchers
+dim(matched_dataset) #47736 years of data
+dim(matched_dataset %>% filter(career_over == F)) #41065 years of actual career
+n_distinct(matched_dataset$cluster_id) #3978 resarchers
 
 # Descriptive info about the final matched dataset
 
 matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>%  count(discipline) #How many matches per discipline
 matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_country) %>% print(n=100) #How many matches per country
 matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_region) %>% print(n=100) #How many matches per region
-matched_dataset %>% distinct(cluster_id, .keep_all = T) %>%filter(condition_numeric == 1) %>% count(gender) #How many matches per gender
+matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(gender) #How many matches per gender
 matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_type) #how many types of origin institution per match. i manually went through the NA - 14 = education, 1 = archive, 25 = facility, 12 = government, 14 = healthcare, 6 = nonprofit
 matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(USA_type) #how many types of USA institution per match. i manually went through the NA - 1 = education, 1 =archive, 1 = facility, 1= gov, 2 = health, 4 = nonprofit
 

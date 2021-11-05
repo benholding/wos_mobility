@@ -774,14 +774,14 @@ RC_med_qs_njs <- summary(RC_njs_qs_med.out)
 RC_topjoural_qs_med.fit <- lmer(difference_in_qs_quantile_zeropremove ~ post_move + career_year + origin_qs_overall_rank_quartiles+ (1|cluster_id), data = diffindiff_data_only_movers_qs_diff)
 RC_topjournal_qs_out.fit <- lmer(njs_full_over2_yearsum ~ difference_in_qs_quantile_zeropremove + post_move + career_year + origin_qs_overall_rank_quartiles+ (1|cluster_id), data = diffindiff_data_only_movers_qs_diff)
 
-RC_topjournal_qs_med.out <- mediate(topjoural_qs_med.fit, topjournal_qs_out.fit, treat = "post_move", mediator = "difference_in_qs_quantile_zeropremove", robustSE = F, sims = 100)
+RC_topjournal_qs_med.out <- mediate(RC_topjoural_qs_med.fit, RC_topjournal_qs_out.fit, treat = "post_move", mediator = "difference_in_qs_quantile_zeropremove", robustSE = F, sims = 100)
 RC_med_qs_topjournals <- summary(RC_topjournal_qs_med.out)
 
 # Top cited papers
 RC_top10_qs_med.fit <- lmer(difference_in_qs_quantile_zeropremove ~ post_move + career_year + origin_qs_overall_rank_quartiles+ (1|cluster_id), data = diffindiff_data_only_movers_qs_diff)
 RC_top10_qs_out.fit <- lmer(p_top_prop10_full_yearsum ~ difference_in_qs_quantile_zeropremove + post_move + career_year + origin_qs_overall_rank_quartiles +(1|cluster_id), data = diffindiff_data_only_movers_qs_diff)
 
-RC_top10_qs_med.out <- mediate(RC_top10_qs_med.fit, top10_qs_out.fit, treat = "post_move", mediator = "difference_in_qs_quantile_zeropremove", robustSE = F, sims = 100)
+RC_top10_qs_med.out <- mediate(RC_top10_qs_med.fit, RC_top10_qs_out.fit, treat = "post_move", mediator = "difference_in_qs_quantile_zeropremove", robustSE = F, sims = 100)
 RC_med_qs_pptop10 <- summary(RC_top10_qs_med.out)
 
 # LEIDEN RANKING
@@ -849,11 +849,11 @@ write.csv(RC_mediation_table, "tables/S7. Mediation Quantiles.csv")
 ########################################################################################################
 
 # Robustness check 9, step 1 - making datasets contaiing only individuals that can be classed as moving up (over 1SD from mean) or moving down (below 1SD from mean) #
-qs_low <- diffindiff_data_only_movers_qs_diff %>% filter(gelman_origin_qs_overall_score_mean < mean(gelman_origin_qs_overall_score_mean, na.rm=T)-sd(gelman_origin_qs_overall_score_mean, na.rm=T)) %>% distinct(pair_id) %>% left_join(alt_data_matched_dataset, by = "pair_id")
-qs_high <- diffindiff_data_only_movers_qs_diff %>% filter(gelman_origin_qs_overall_score_mean > mean(gelman_origin_qs_overall_score_mean, na.rm=T)+sd(gelman_origin_qs_overall_score_mean, na.rm=T)) %>% distinct(pair_id) %>% left_join(alt_data_matched_dataset, by = "pair_id")
+qs_low <- diffindiff_data_only_movers_qs_diff %>% filter(gelman_difference_in_qs_overall_score < mean(gelman_difference_in_qs_overall_score, na.rm=T)-sd(gelman_difference_in_qs_overall_score, na.rm=T)) %>% distinct(pair_id) %>% left_join(matched_dataset, by = "pair_id")
+qs_high <- diffindiff_data_only_movers_qs_diff %>% filter(gelman_difference_in_qs_overall_score > mean(gelman_difference_in_qs_overall_score, na.rm=T)+sd(gelman_difference_in_qs_overall_score, na.rm=T)) %>% distinct(pair_id) %>% left_join(matched_dataset, by = "pair_id")
   
-leiden_low <- diffindiff_data_only_movers_leiden_diff %>% filter(gelman_origin_pp_top10_mean < mean(gelman_origin_pp_top10_mean, na.rm=T)-sd(gelman_origin_pp_top10_mean, na.rm=T)) %>% distinct(pair_id) %>% left_join(alt_data_matched_dataset, by = "pair_id")
-leiden_high <- diffindiff_data_only_movers_leiden_diff %>% filter(gelman_origin_pp_top10_mean > mean(gelman_origin_pp_top10_mean, na.rm=T)+sd(gelman_origin_pp_top10_mean, na.rm=T)) %>% distinct(pair_id) %>% left_join(alt_data_matched_dataset, by = "pair_id")
+leiden_low <- diffindiff_data_only_movers_leiden_diff %>% filter(gelman_difference_in_pptop10 < mean(gelman_difference_in_pptop10, na.rm=T)-sd(gelman_difference_in_pptop10, na.rm=T)) %>% distinct(pair_id) %>% left_join(matched_dataset, by = "pair_id")
+leiden_high <- diffindiff_data_only_movers_leiden_diff %>% filter(gelman_difference_in_pptop10 > mean(gelman_difference_in_pptop10, na.rm=T)+sd(gelman_difference_in_pptop10, na.rm=T)) %>% distinct(pair_id) %>% left_join(matched_dataset, by = "pair_id")
 
 # Robustness check 9, step 2 - running the difference in difference analysis for the four difference subsamples
 # Publications
@@ -868,7 +868,7 @@ RC_QS_LOW_did_model_pfull <- att_gt(yname = "p_full_yearsum",
                           anticipation = 1,
                           allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_QS_LOW_did_model_pfull_dynamic_short <- aggte(RC_QS_LOW_did_model_pfull, type = "dynamic", min_e = -2, max_e = 2)
+RC_QS_LOW_did_model_pfull_dynamic_short <- aggte(RC_QS_LOW_did_model_pfull, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_QS_LOW_did_model_pfull_dynamic_short)
 RC_QS_LOW_p_full_did_plot <- ggdid(RC_QS_LOW_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
 
@@ -883,7 +883,7 @@ RC_QS_HIGH_did_model_pfull <- att_gt(yname = "p_full_yearsum",
                                     anticipation = 1,
                                     allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_QS_HIGH_did_model_pfull_dynamic_short <- aggte(RC_QS_HIGH_did_model_pfull, type = "dynamic", min_e = -2, max_e = 2)
+RC_QS_HIGH_did_model_pfull_dynamic_short <- aggte(RC_QS_HIGH_did_model_pfull, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_QS_HIGH_did_model_pfull_dynamic_short)
 RC_QS_HIGH_p_full_did_plot <- ggdid(RC_QS_HIGH_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
 
@@ -899,7 +899,7 @@ RC_LEIDEN_LOW_did_model_pfull <- att_gt(yname = "p_full_yearsum",
                                     anticipation = 1,
                                     allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_LEIDEN_LOW_did_model_pfull_dynamic_short <- aggte(RC_LEIDEN_LOW_did_model_pfull, type = "dynamic", min_e = -2, max_e = 2)
+RC_LEIDEN_LOW_did_model_pfull_dynamic_short <- aggte(RC_LEIDEN_LOW_did_model_pfull, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_LEIDEN_LOW_did_model_pfull_dynamic_short)
 RC_LEIDEN_LOW_p_full_did_plot <- ggdid(RC_LEIDEN_LOW_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
 
@@ -914,7 +914,7 @@ RC_LEIDEN_HIGH_did_model_pfull <- att_gt(yname = "p_full_yearsum",
                                      anticipation = 1,
                                      allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_LEIDEN_HIGH_did_model_pfull_dynamic_short <- aggte(RC_LEIDEN_HIGH_did_model_pfull, type = "dynamic", min_e = -2, max_e = 2)
+RC_LEIDEN_HIGH_did_model_pfull_dynamic_short <- aggte(RC_LEIDEN_HIGH_did_model_pfull, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_LEIDEN_HIGH_did_model_pfull_dynamic_short)
 RC_LEIDEN_HIGH_p_full_did_plot <- ggdid(RC_LEIDEN_HIGH_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
 
@@ -931,7 +931,7 @@ RC_QS_LOW_did_model_ncs <- att_gt(yname = "ncs_full_mean",
                                     anticipation = 1,
                                     allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_QS_LOW_did_model_ncs_dynamic_short <- aggte(RC_QS_LOW_did_model_ncs, type = "dynamic", min_e = -2, max_e = 2)
+RC_QS_LOW_did_model_ncs_dynamic_short <- aggte(RC_QS_LOW_did_model_ncs, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_QS_LOW_did_model_ncs_dynamic_short)
 RC_QS_LOW_ncs_did_plot <- ggdid(RC_QS_LOW_did_model_ncs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "ncs")
 
@@ -946,7 +946,7 @@ RC_QS_HIGH_did_model_ncs <- att_gt(yname = "ncs_full_mean",
                                      anticipation = 1,
                                      allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_QS_HIGH_did_model_ncs_dynamic_short <- aggte(RC_QS_HIGH_did_model_ncs, type = "dynamic", min_e = -2, max_e = 2)
+RC_QS_HIGH_did_model_ncs_dynamic_short <- aggte(RC_QS_HIGH_did_model_ncs, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_QS_HIGH_did_model_ncs_dynamic_short)
 RC_QS_HIGH_ncs_did_plot <- ggdid(RC_QS_HIGH_did_model_ncs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "ncs")
 
@@ -962,7 +962,7 @@ RC_LEIDEN_LOW_did_model_ncs <- att_gt(yname = "ncs_full_mean",
                                         anticipation = 1,
                                         allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_LEIDEN_LOW_did_model_ncs_dynamic_short <- aggte(RC_LEIDEN_LOW_did_model_ncs, type = "dynamic", min_e = -2, max_e = 2)
+RC_LEIDEN_LOW_did_model_ncs_dynamic_short <- aggte(RC_LEIDEN_LOW_did_model_ncs, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_LEIDEN_LOW_did_model_ncs_dynamic_short)
 RC_LEIDEN_LOW_ncs_did_plot <- ggdid(RC_LEIDEN_LOW_did_model_ncs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "ncs")
 
@@ -977,7 +977,7 @@ RC_LEIDEN_HIGH_did_model_ncs <- att_gt(yname = "ncs_full_mean",
                                          anticipation = 1,
                                          allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_LEIDEN_HIGH_did_model_ncs_dynamic_short <- aggte(RC_LEIDEN_HIGH_did_model_ncs, type = "dynamic", min_e = -2, max_e = 2)
+RC_LEIDEN_HIGH_did_model_ncs_dynamic_short <- aggte(RC_LEIDEN_HIGH_did_model_ncs, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_LEIDEN_HIGH_did_model_ncs_dynamic_short)
 RC_LEIDEN_HIGH_ncs_did_plot <- ggdid(RC_LEIDEN_HIGH_did_model_ncs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
 
@@ -994,7 +994,7 @@ RC_QS_LOW_did_model_njs <- att_gt(yname = "njs_full_mean",
                                   anticipation = 1,
                                   allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_QS_LOW_did_model_njs_dynamic_short <- aggte(RC_QS_LOW_did_model_njs, type = "dynamic", min_e = -2, max_e = 2)
+RC_QS_LOW_did_model_njs_dynamic_short <- aggte(RC_QS_LOW_did_model_njs, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_QS_LOW_did_model_njs_dynamic_short)
 RC_QS_LOW_njs_did_plot <- ggdid(RC_QS_LOW_did_model_njs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "njs")
 
@@ -1009,7 +1009,7 @@ RC_QS_HIGH_did_model_ncj <- att_gt(yname = "njs_full_mean",
                                    anticipation = 1,
                                    allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_QS_HIGH_did_model_njs_dynamic_short <- aggte(RC_QS_HIGH_did_model_ncj, type = "dynamic", min_e = -2, max_e = 2)
+RC_QS_HIGH_did_model_njs_dynamic_short <- aggte(RC_QS_HIGH_did_model_ncj, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_QS_HIGH_did_model_njs_dynamic_short)
 RC_QS_HIGH_njs_did_plot <- ggdid(RC_QS_HIGH_did_model_njs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "njs")
 
@@ -1025,7 +1025,7 @@ RC_LEIDEN_LOW_did_model_njs <- att_gt(yname = "njs_full_mean",
                                       anticipation = 1,
                                       allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_LEIDEN_LOW_did_model_njs_dynamic_short <- aggte(RC_LEIDEN_LOW_did_model_njs, type = "dynamic", min_e = -2, max_e = 2)
+RC_LEIDEN_LOW_did_model_njs_dynamic_short <- aggte(RC_LEIDEN_LOW_did_model_njs, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_LEIDEN_LOW_did_model_njs_dynamic_short)
 RC_LEIDEN_LOW_njs_did_plot <- ggdid(RC_LEIDEN_LOW_did_model_njs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "ncs")
 
@@ -1040,7 +1040,7 @@ RC_LEIDEN_HIGH_did_model_njs <- att_gt(yname = "njs_full_mean",
                                        anticipation = 1,
                                        allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_LEIDEN_HIGH_did_model_njs_dynamic_short <- aggte(RC_LEIDEN_HIGH_did_model_njs, type = "dynamic", min_e = -2, max_e = 2)
+RC_LEIDEN_HIGH_did_model_njs_dynamic_short <- aggte(RC_LEIDEN_HIGH_did_model_njs, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_LEIDEN_HIGH_did_model_njs_dynamic_short)
 RC_LEIDEN_HIGH_njs_did_plot <- ggdid(RC_LEIDEN_HIGH_did_model_njs_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
 
@@ -1057,7 +1057,7 @@ RC_QS_LOW_did_model_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
                                   anticipation = 1,
                                   allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_QS_LOW_did_model_topjournals_dynamic_short <- aggte(RC_QS_LOW_did_model_topjournals, type = "dynamic", min_e = -2, max_e = 2)
+RC_QS_LOW_did_model_topjournals_dynamic_short <- aggte(RC_QS_LOW_did_model_topjournals, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_QS_LOW_did_model_topjournals_dynamic_short)
 RC_QS_LOW_topjournals_did_plot <- ggdid(RC_QS_LOW_did_model_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "njs")
 
@@ -1072,7 +1072,7 @@ RC_QS_HIGH_did_model_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
                                    anticipation = 1,
                                    allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_QS_HIGH_did_model_topjournals_dynamic_short <- aggte(RC_QS_HIGH_did_model_topjournals, type = "dynamic", min_e = -2, max_e = 2)
+RC_QS_HIGH_did_model_topjournals_dynamic_short <- aggte(RC_QS_HIGH_did_model_topjournals, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_QS_HIGH_did_model_topjournals_dynamic_short)
 RC_QS_HIGH_topjournals_did_plot <- ggdid(RC_QS_HIGH_did_model_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "njs")
 
@@ -1088,7 +1088,7 @@ RC_LEIDEN_LOW_did_model_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
                                       anticipation = 1,
                                       allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_LEIDEN_LOW_did_model_topjournals_dynamic_short <- aggte(RC_LEIDEN_LOW_did_model_topjournals, type = "dynamic", min_e = -2, max_e = 2)
+RC_LEIDEN_LOW_did_model_topjournals_dynamic_short <- aggte(RC_LEIDEN_LOW_did_model_topjournals, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_LEIDEN_LOW_did_model_topjournals_dynamic_short)
 RC_LEIDEN_LOW_topjournals_did_plot <- ggdid(RC_LEIDEN_LOW_did_model_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "ncs")
 
@@ -1103,7 +1103,7 @@ RC_LEIDEN_HIGH_did_model_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
                                        anticipation = 1,
                                        allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_LEIDEN_HIGH_did_model_topjournals_dynamic_short <- aggte(RC_LEIDEN_HIGH_did_model_topjournals, type = "dynamic", min_e = -2, max_e = 2)
+RC_LEIDEN_HIGH_did_model_topjournals_dynamic_short <- aggte(RC_LEIDEN_HIGH_did_model_topjournals, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_LEIDEN_HIGH_did_model_topjournals_dynamic_short)
 RC_LEIDEN_HIGH_topjournals_did_plot <- ggdid(RC_LEIDEN_HIGH_did_model_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
 
@@ -1119,7 +1119,7 @@ RC_QS_LOW_did_model_topcited <- att_gt(yname = "p_top_prop10_full_yearsum",
                                           anticipation = 1,
                                           allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_QS_LOW_did_model_topcited_dynamic_short <- aggte(RC_QS_LOW_did_model_topcited, type = "dynamic", min_e = -2, max_e = 2)
+RC_QS_LOW_did_model_topcited_dynamic_short <- aggte(RC_QS_LOW_did_model_topcited, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_QS_LOW_did_model_topcited_dynamic_short)
 RC_QS_LOW_topcited_did_plot <- ggdid(RC_QS_LOW_did_model_topcited_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "njs")
 
@@ -1134,7 +1134,7 @@ RC_QS_HIGH_did_model_topcited <- att_gt(yname = "p_top_prop10_full_yearsum",
                                            anticipation = 1,
                                            allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_QS_HIGH_did_model_topcited_dynamic_short <- aggte(RC_QS_HIGH_did_model_topcited, type = "dynamic", min_e = -2, max_e = 2)
+RC_QS_HIGH_did_model_topcited_dynamic_short <- aggte(RC_QS_HIGH_did_model_topcited, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_QS_HIGH_did_model_topcited_dynamic_short)
 RC_QS_HIGH_topcited_did_plot <- ggdid(RC_QS_HIGH_did_model_topcited_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "njs")
 
@@ -1150,7 +1150,7 @@ RC_LEIDEN_LOW_did_model_topcited <- att_gt(yname = "p_top_prop10_full_yearsum",
                                               anticipation = 1,
                                               allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_LEIDEN_LOW_did_model_topcited_dynamic_short <- aggte(RC_LEIDEN_LOW_did_model_topcited, type = "dynamic", min_e = -2, max_e = 2)
+RC_LEIDEN_LOW_did_model_topcited_dynamic_short <- aggte(RC_LEIDEN_LOW_did_model_topcited, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_LEIDEN_LOW_did_model_topcited_dynamic_short)
 RC_LEIDEN_LOW_topcited_did_plot <- ggdid(RC_LEIDEN_LOW_did_model_topcited_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "ncs")
 
@@ -1165,7 +1165,7 @@ RC_LEIDEN_HIGH_did_model_topcited <- att_gt(yname = "p_top_prop10_full_yearsum",
                                                anticipation = 1,
                                                allow_unbalanced_panel = T) #i think this should account for the fact that some people have quit science (and we therefore don't have full data for them)
 
-RC_LEIDEN_HIGH_did_model_topcited_dynamic_short <- aggte(RC_LEIDEN_HIGH_did_model_topcited, type = "dynamic", min_e = -2, max_e = 2)
+RC_LEIDEN_HIGH_did_model_topcited_dynamic_short <- aggte(RC_LEIDEN_HIGH_did_model_topcited, type = "dynamic", min_e = -2, max_e = 2,na.rm = TRUE)
 summary(RC_LEIDEN_HIGH_did_model_topcited_dynamic_short)
 RC_LEIDEN_HIGH_topcited_did_plot <- ggdid(RC_LEIDEN_HIGH_did_model_topcited_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
 

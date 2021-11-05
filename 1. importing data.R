@@ -73,9 +73,15 @@ citation_3year_info <-
           citation_3year_step1
           )
         )
-    )
+    ) %>% 
+  distinct(ut, .keep_all = T)
 
-  
+updated_for_matched_uts <- read_excel("raw_data/wos_extra/matched_sample_indicators.xlsx", sheet = "3yrcit") %>% distinct(ut, .keep_all = T) %>% select(-cluster_id) %>% mutate(source_title = NA) #just to double check we have the most updated scores
+
+citation_3year_info %>% filter(!ut %in% updated_for_matched_uts$ut) %>% #removing old values for the important uts
+  rbind(updated_for_matched_uts) #adding in most up to date uts
+
+citation_3year_info <- citation_3year_info %>% mutate(p_full = if_else(is.na(p_full), 1, p_full)) #since there is missing coverage for some of our articles, I make sure that at least we count publications for them
   
 #Next, I import the wos institution names that i matched to their grid profiles using the dimensions api. The main dataset "institute_grids_ids" contains also what "type of institute"
 wos_matched_to_grid <- read_csv("raw_data/misc/wos_matched_to_grid_final.csv")

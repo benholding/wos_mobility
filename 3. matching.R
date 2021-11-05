@@ -1,5 +1,6 @@
 #4. matching movers and non-movers
-source("2. data cleaning and maniputation.R") #importing data and packages
+library(dplyr)
+load(file = "for_matching.RData")
 
 #########################################################################
 #########################################################################
@@ -12,7 +13,7 @@ source("2. data cleaning and maniputation.R") #importing data and packages
 ############################################################
 
 movers_to_USA_id_list <- movers_dataset_final %>% distinct(cluster_id)
-never_movers_id_list <- stayers_dataset_3 %>% distinct(cluster_id)
+never_movers_id_list <- stayers_dataset_4 %>% distinct(cluster_id)
 
 ##########################################################################
 # MATCHING STEP TWO: GET BASIC INFORMATION ABOUT OUR MOVERS AND STAYERS  #
@@ -95,7 +96,7 @@ for_matching_stayers <- researcher_basic_info %>% # take the basic df
 matches_basic <- for_matching_movers %>% 
   left_join(for_matching_stayers, by = c("gender", "origin_country", "origin_institution", "discipline"))  #joins "movers" and "stayers" DF by if they have same gender, origin and discipline/specialty(depending on which i choose)
 
-length(unique(matches_basic$cluster_id_movers))  #2598
+length(unique(matches_basic$cluster_id_movers))  #2368
 
 #step 5b - making sure that the control group were at the origin before their match moved, and making sure the controls were active in science for at least 2 years after their match moved.
 matches_eligible <- matches_basic %>% 
@@ -106,7 +107,7 @@ matches_eligible <- matches_basic %>%
   mutate(number_of_matches = n()) %>% 
   ungroup()
 
-length(unique(matches_eligible$cluster_id_movers))  #2424
+length(unique(matches_eligible$cluster_id_movers))  #2160
 
 #step 5c - keeping only “unique“ matches. By this i mean that each control participant can only be matched with one mover.
 # matches with the same specialty, and if they have the same specialty then longer careers, are preferred matches.
@@ -121,8 +122,8 @@ matches_unique <- matches_eligible %>%
   select(cluster_id_movers, cluster_id_stayers, moving_year = years_between_starting_and_moving_movers, discipline, do_specialties_match, specialty_movers,specialty_stayers) %>% 
   mutate(pair_id = row_number())
 
-length(unique(matches_unique$cluster_id_movers))  #2250
-length(unique(matches_eligible$cluster_id_movers))  -length(unique(matches_unique$cluster_id_movers)) #how many duplicate matches = 174
+length(unique(matches_unique$cluster_id_movers))  #1989
+length(unique(matches_eligible$cluster_id_movers))  -length(unique(matches_unique$cluster_id_movers)) #how many duplicate matches = 171
 
 #step 5d - I put the unique matches into long format, that can be used the left_join to publication information.
 cluster_id_and_pair_id <- 
