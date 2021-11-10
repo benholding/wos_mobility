@@ -11,6 +11,8 @@ set.seed(5030)
 ########## ROBUSTNESS CHECK 1. DID with control for prior performance ##########
 ################################################################################
 
+matched_dataset_robustnesscheck %>% distinct(pair_id) %>% dim() #958 matched pairs
+
 # Check 1, step 1 - Running the Difference-in-difference models #
 # Publications #
 
@@ -116,7 +118,7 @@ ggexport(robustness_check_performance_control, filename = "plots/S6_robustness_p
 onlyleiden_matched_dataset <- matched_dataset %>% 
   filter(origin_leiden_ranked == 1)
 
-onlyleiden_matched_dataset %>% distinct(pair_id) %>% dim() #1792
+onlyleiden_matched_dataset %>% distinct(pair_id) %>% dim() #1594
 
 # Check 2, step 2 - running the difference in difference analysis #
 
@@ -435,7 +437,7 @@ pair_ids_to_keep <- matched_dataset %>%
 published_in_first_year_matched_dataset <- 
   pair_ids_to_keep %>% left_join(matched_dataset, by = "pair_id")
 
-published_in_first_year_matched_dataset %>% distinct(pair_id) %>% dim() #1454 matched pairs
+published_in_first_year_matched_dataset %>% distinct(pair_id) %>% dim() #1520 matched pairs
 
 # Check 5, step 2 - running the difference in difference models #
 #Publications

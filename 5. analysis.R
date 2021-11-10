@@ -258,7 +258,7 @@ p_top_prop10_full_qs_moderation_plot <- interplot(m = p_top_prop10_full_qs, var1
   theme_bw() +
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
-  scale_y_continuous(expand = c(0,0)) +
+  scale_y_continuous(limits = c(-0.25,0.85), expand = c(0,0)) +
   scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5),labels=c("-2", "-1", "0", "1")) +
   geom_hline(yintercept=0, linetype="dotted")
 
@@ -266,7 +266,7 @@ p_top_prop10_full_pptop10_moderation_plot <- interplot(m = p_top_prop10_full_ppt
   theme_bw() +
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
-  scale_y_continuous(expand = c(0,0)) +
+  scale_y_continuous(limits = c(-0.25,0.85),expand = c(0,0)) +
   scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1),labels=c("-2", "0", "2")) +
   geom_hline(yintercept=0, linetype="dotted")
 
@@ -470,55 +470,22 @@ h_index_on_year_prior <- researchers_with_five_years_post_move %>%
 
 h_index_data <- h_index_on_year_prior %>% left_join(hindex_at_5years_post) %>% mutate(change_in_hindex = post_move_h_index-pre_move_h_index)
 
-h_index_data_new <- h_index_data %>% pivot_longer(!c(cluster_id,condition, change_in_hindex), names_to = "pre_or_post", values_to = "hindex") %>% mutate(pre_or_post = factor(gsub("_h_index", "",pre_or_post), levels = c("pre_move", "post_move"), labels = c("Pre-move", "Post-move")))
+h_index_data_new <- h_index_data %>% pivot_longer(!c(cluster_id,condition, change_in_hindex), names_to = "pre_or_post", values_to = "hindex") %>% mutate(pre_or_post = factor(gsub("_h_index", "",pre_or_post), levels = c("pre_move", "post_move"), labels = c("Pre-move", "Post-move")),
+                                                                                                                                                         condition = factor(condition, levels = c("stayers", "movers"), labels = c("Stayers", "Movers")))
 
 vioplot(hindex ~ pre_or_post, data = h_index_data_new %>% filter(condition == "stayers"), h = 0.1, col = "lightblue", plotCentre = "line", 
-        side = "left", areaEqual = F, xlab = NULL, ylab = "'h-index'",ylim = c(0, 4))
+        side = "left", areaEqual = F, xlab = NULL, ylab = "'fractionalised h-index estimation'",ylim = c(0, 4))
 vioplot(hindex ~ pre_or_post, data = h_index_data_new %>% filter(condition == "movers"), h = 0.1, col = "palevioletred", plotCentre = "line", 
         side = "right", add = T,areaEqual = F,ylim = c(0, 4))
-legend("topleft", fill = c("lightblue", "palevioletred"), legend = c("Stayers", "Movers"), title = NULL)
-mtext(text=LETTERS[1], side = 3, adj = 0)
+#legend("topleft", fill = c("lightblue", "palevioletred"), legend = c("Stayers", "Movers"), title = NULL)
+mtext(text=expression(bold("F")), side = 3, adj = 0)
 
-# the same but with performance matched
-
-performance_matched_fiveyearspost <- matched_dataset_robustnesscheck %>% filter(years_from_obtaining_usa_affilation == 5, career_over == 0) %>% distinct(cluster_id)
-
-performance_matched_hindex_at_5years_post <- performance_matched_fiveyearspost %>% 
-  left_join(matched_dataset_robustnesscheck) %>%  
-  filter(years_from_obtaining_usa_affilation <= 5) %>% 
-  group_by(cluster_id) %>% 
-  summarise(condition = first(condition),
-            sum_ncs = sum(ncs_frac_yearsum),
-            post_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
-  select(cluster_id, condition, post_move_h_index) 
-
-performance_matched_h_index_on_year_prior <- performance_matched_fiveyearspost %>% 
-  left_join(matched_dataset_robustnesscheck) %>%  
-  filter(years_from_obtaining_usa_affilation < 0) %>% 
-  group_by(cluster_id) %>% 
-  summarise(condition = first(condition),
-            sum_ncs = sum(ncs_frac_yearsum),
-            pre_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
-  select(cluster_id, condition, pre_move_h_index)
-
-performance_matched_h_index_data <- performance_matched_h_index_on_year_prior %>% left_join(performance_matched_hindex_at_5years_post) %>% mutate(change_in_hindex = post_move_h_index-pre_move_h_index)
-performance_matched_h_index_data_new <- performance_matched_h_index_data %>% pivot_longer(!c(cluster_id,condition, change_in_hindex), names_to = "pre_or_post", values_to = "hindex") %>% mutate(pre_or_post = factor(gsub("_h_index", "",pre_or_post), levels = c("pre_move", "post_move"), labels = c("Pre-move", "Post-move")))
-
-vioplot(hindex ~ pre_or_post, data = performance_matched_h_index_data_new %>% filter(condition == "stayers"), h = 0.1, col = "lightblue", plotCentre = "line", 
-        side = "left", areaEqual = F, ylab = NULL,ylim = c(0, 4))
-vioplot(hindex ~ pre_or_post, data = performance_matched_h_index_data_new %>% filter(condition == "movers"), h = 0.1, col = "palevioletred", plotCentre = "line", 
-        side = "right", add = T,areaEqual = F,ylim = c(0, 4))
-#legend("topleft", fill = c("lightblue", "palevioletred"), legend = c("Premove", "5 years post move"), title = NULL)
-
-# #the same but with leiden ranked at origin
-# onlyleiden_matched_dataset <- matched_dataset %>% 
-#   filter(origin_leiden_ranked == 1)
+# # the same but with performance matched
 # 
+# performance_matched_fiveyearspost <- matched_dataset_robustnesscheck %>% filter(years_from_obtaining_usa_affilation == 5, career_over == 0) %>% distinct(cluster_id)
 # 
-# leidenranked_fiveyearspost <- onlyleiden_matched_dataset %>% filter(years_from_obtaining_usa_affilation == 5, career_over == 0) %>% distinct(cluster_id)
-# 
-# leidenranked_hindex_at_5years_post <- leidenranked_fiveyearspost %>% 
-#   left_join(onlyleiden_matched_dataset) %>%  
+# performance_matched_hindex_at_5years_post <- performance_matched_fiveyearspost %>% 
+#   left_join(matched_dataset_robustnesscheck) %>%  
 #   filter(years_from_obtaining_usa_affilation <= 5) %>% 
 #   group_by(cluster_id) %>% 
 #   summarise(condition = first(condition),
@@ -526,8 +493,8 @@ vioplot(hindex ~ pre_or_post, data = performance_matched_h_index_data_new %>% fi
 #             post_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
 #   select(cluster_id, condition, post_move_h_index) 
 # 
-# leidenranked_h_index_on_year_prior <- leidenranked_fiveyearspost %>% 
-#   left_join(onlyleiden_matched_dataset) %>%  
+# performance_matched_h_index_on_year_prior <- performance_matched_fiveyearspost %>% 
+#   left_join(matched_dataset_robustnesscheck) %>%  
 #   filter(years_from_obtaining_usa_affilation < 0) %>% 
 #   group_by(cluster_id) %>% 
 #   summarise(condition = first(condition),
@@ -535,53 +502,256 @@ vioplot(hindex ~ pre_or_post, data = performance_matched_h_index_data_new %>% fi
 #             pre_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
 #   select(cluster_id, condition, pre_move_h_index)
 # 
-# leidenranked_h_index_data <- leidenranked_h_index_on_year_prior %>% left_join(leidenranked_hindex_at_5years_post) %>% mutate(change_in_hindex = post_move_h_index-pre_move_h_index)
+# performance_matched_h_index_data <- performance_matched_h_index_on_year_prior %>% left_join(performance_matched_hindex_at_5years_post) %>% mutate(change_in_hindex = post_move_h_index-pre_move_h_index)
+# performance_matched_h_index_data_new <- performance_matched_h_index_data %>% pivot_longer(!c(cluster_id,condition, change_in_hindex), names_to = "pre_or_post", values_to = "hindex") %>% mutate(pre_or_post = factor(gsub("_h_index", "",pre_or_post), levels = c("pre_move", "post_move"), labels = c("Pre-move", "Post-move")))
 # 
-# vioplot(pre_move_h_index ~ condition, data = leidenranked_h_index_data, h = 0.1, col = "lightblue", plotCentre = "line", 
-#         side = "left", areaEqual = F, ylab = "'h-index'",ylim = c(0, 4))
-# vioplot(post_move_h_index ~ condition, data = leidenranked_h_index_data, h = 0.1, col = "palevioletred", plotCentre = "line", 
+# vioplot(hindex ~ pre_or_post, data = performance_matched_h_index_data_new %>% filter(condition == "stayers"), h = 0.1, col = "lightblue", plotCentre = "line", 
+#         side = "left", areaEqual = F, ylab = NULL,ylim = c(0, 4))
+# vioplot(hindex ~ pre_or_post, data = performance_matched_h_index_data_new %>% filter(condition == "movers"), h = 0.1, col = "palevioletred", plotCentre = "line", 
+#         side = "right", add = T,areaEqual = F,ylim = c(0, 4))
+# #legend("topleft", fill = c("lightblue", "palevioletred"), legend = c("Premove", "5 years post move"), title = NULL)
+# 
+# # #the same but with leiden ranked at origin
+# # onlyleiden_matched_dataset <- matched_dataset %>% 
+# #   filter(origin_leiden_ranked == 1)
+# # 
+# # 
+# # leidenranked_fiveyearspost <- onlyleiden_matched_dataset %>% filter(years_from_obtaining_usa_affilation == 5, career_over == 0) %>% distinct(cluster_id)
+# # 
+# # leidenranked_hindex_at_5years_post <- leidenranked_fiveyearspost %>% 
+# #   left_join(onlyleiden_matched_dataset) %>%  
+# #   filter(years_from_obtaining_usa_affilation <= 5) %>% 
+# #   group_by(cluster_id) %>% 
+# #   summarise(condition = first(condition),
+# #             sum_ncs = sum(ncs_frac_yearsum),
+# #             post_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
+# #   select(cluster_id, condition, post_move_h_index) 
+# # 
+# # leidenranked_h_index_on_year_prior <- leidenranked_fiveyearspost %>% 
+# #   left_join(onlyleiden_matched_dataset) %>%  
+# #   filter(years_from_obtaining_usa_affilation < 0) %>% 
+# #   group_by(cluster_id) %>% 
+# #   summarise(condition = first(condition),
+# #             sum_ncs = sum(ncs_frac_yearsum),
+# #             pre_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
+# #   select(cluster_id, condition, pre_move_h_index)
+# # 
+# # leidenranked_h_index_data <- leidenranked_h_index_on_year_prior %>% left_join(leidenranked_hindex_at_5years_post) %>% mutate(change_in_hindex = post_move_h_index-pre_move_h_index)
+# # 
+# # vioplot(pre_move_h_index ~ condition, data = leidenranked_h_index_data, h = 0.1, col = "lightblue", plotCentre = "line", 
+# #         side = "left", areaEqual = F, ylab = "'h-index'",ylim = c(0, 4))
+# # vioplot(post_move_h_index ~ condition, data = leidenranked_h_index_data, h = 0.1, col = "palevioletred", plotCentre = "line", 
+# #         side = "right", add = T,areaEqual = F,ylim = c(0, 4))
+# # #legend("topleft", fill = c("lightblue", "palevioletred"), legend = c("Premove", "5 years post move"), title = NULL)
+# 
+# # the same but all controls needed to publish in the moving year
+# pair_ids_to_keep <- matched_dataset %>% 
+#   filter(condition_numeric == 0,
+#          career_year == moving_year,
+#          p_full_yearsum > 0) %>% 
+#   distinct(pair_id)
+# 
+# published_in_first_year_matched_dataset <- 
+#   pair_ids_to_keep %>% left_join(matched_dataset, by = "pair_id")
+# 
+# published_in_first_year_fiveyearspost <- published_in_first_year_matched_dataset %>% filter(years_from_obtaining_usa_affilation == 5, career_over == 0) %>% distinct(cluster_id)
+# 
+# published_in_first_year_hindex_at_5years_post <- published_in_first_year_fiveyearspost %>% 
+#   left_join(published_in_first_year_matched_dataset) %>%  
+#   filter(years_from_obtaining_usa_affilation <= 5) %>% 
+#   group_by(cluster_id) %>% 
+#   summarise(condition = first(condition),
+#             sum_ncs = sum(ncs_frac_yearsum),
+#             post_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
+#   select(cluster_id, condition, post_move_h_index) 
+# 
+# published_in_first_year_h_index_on_year_prior <- published_in_first_year_fiveyearspost %>% 
+#   left_join(published_in_first_year_matched_dataset) %>%  
+#   filter(years_from_obtaining_usa_affilation < 0) %>% 
+#   group_by(cluster_id) %>% 
+#   summarise(condition = first(condition),
+#             sum_ncs = sum(ncs_frac_yearsum),
+#             pre_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
+#   select(cluster_id, condition, pre_move_h_index)
+# 
+# published_in_first_year_h_index_data <- published_in_first_year_h_index_on_year_prior %>% left_join(published_in_first_year_hindex_at_5years_post) %>% mutate(change_in_hindex = post_move_h_index-pre_move_h_index)
+# published_in_first_year_h_index_data_new <- published_in_first_year_h_index_data %>% pivot_longer(!c(cluster_id,condition, change_in_hindex), names_to = "pre_or_post", values_to = "hindex") %>% mutate(pre_or_post = factor(gsub("_h_index", "",pre_or_post), levels = c("pre_move", "post_move"), labels = c("Pre-move", "Post-move")))
+# 
+# 
+# vioplot(hindex ~ pre_or_post, data = published_in_first_year_h_index_data_new %>% filter(condition == "stayers"), h = 0.1, col = "lightblue", plotCentre = "line", 
+#         side = "left", areaEqual = F, ylab = NULL,ylim = c(0, 4))
+# vioplot(hindex ~ pre_or_post, data = published_in_first_year_h_index_data_new %>% filter(condition == "movers"), h = 0.1, col = "palevioletred", plotCentre = "line", 
 #         side = "right", add = T,areaEqual = F,ylim = c(0, 4))
 # #legend("topleft", fill = c("lightblue", "palevioletred"), legend = c("Premove", "5 years post move"), title = NULL)
 
-# the same but all controls needed to publish in the moving year
-pair_ids_to_keep <- matched_dataset %>% 
-  filter(condition_numeric == 0,
-         career_year == moving_year,
-         p_full_yearsum > 0) %>% 
-  distinct(pair_id)
 
-published_in_first_year_matched_dataset <- 
-  pair_ids_to_keep %>% left_join(matched_dataset, by = "pair_id")
+#descriptive plots for 5-years plot
 
-published_in_first_year_fiveyearspost <- published_in_first_year_matched_dataset %>% filter(years_from_obtaining_usa_affilation == 5, career_over == 0) %>% distinct(cluster_id)
+descriptive_5yearspost_data <- researchers_with_five_years_post_move %>% 
+  left_join(matched_dataset) %>% 
+  filter(years_from_obtaining_usa_affilation <= 5 & years_from_obtaining_usa_affilation >= -2) %>%
+  group_by(condition, years_from_obtaining_usa_affilation) %>%
+  summarise(mean_p_full = mean(p_full_yearsum),
+            mean_ncs_full_mean = mean(ncs_full_mean, na.rm=T),
+            mean_njs_full_mean = mean(njs_full_mean, na.rm=T),
+            mean_njs_full_over2_yearsum = mean(njs_full_over2_yearsum),
+            mean_p_top_prop10_full_yearsum =mean(p_top_prop10_full_yearsum),
+            median_p_full = median(p_full_yearsum),
+            median_ncs_full_mean = median(ncs_full_mean, na.rm=T),
+            median_njs_full_mean = median(njs_full_mean, na.rm=T),
+            median_njs_full_over2_yearsum = median(njs_full_over2_yearsum),
+            median_p_top_prop10_full_yearsum =median(p_top_prop10_full_yearsum),
+            sd_p_full = sd(p_full_yearsum),
+            sd_ncs_full_mean = sd(ncs_full_mean, na.rm=T),
+            sd_mean_njs_full_mean = sd(njs_full_mean, na.rm = T),
+            sd_mean_njs_full_over2_yearsum = sd(njs_full_over2_yearsum),
+            sd_mean_p_top_prop10_full_yearsum = sd(p_top_prop10_full_yearsum),
+            se_p_full = sd_p_full/sqrt(n()),
+            se_ncs_full_mean = sd_ncs_full_mean/sqrt(n()),
+            se_mean_njs_full_mean = sd_mean_njs_full_mean/sqrt(n()),
+            se_njs_full_over2_yearsum = sd_mean_njs_full_over2_yearsum/sqrt(n()),
+            se_mean_p_top_prop10_full_yearsum = sd_mean_p_top_prop10_full_yearsum/sqrt(n())
+  )
 
-published_in_first_year_hindex_at_5years_post <- published_in_first_year_fiveyearspost %>% 
-  left_join(published_in_first_year_matched_dataset) %>%  
-  filter(years_from_obtaining_usa_affilation <= 5) %>% 
-  group_by(cluster_id) %>% 
-  summarise(condition = first(condition),
-            sum_ncs = sum(ncs_frac_yearsum),
-            post_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
-  select(cluster_id, condition, post_move_h_index) 
+descriptive_5yearsplot_pubs.plot <- ggplot(descriptive_5yearspost_data, aes( years_from_obtaining_usa_affilation,mean_p_full, group = condition, colour = condition, shape = condition)) +
+  geom_point(size = 3) +
+  geom_line(size = 1) +
+  geom_line(data = descriptive_5yearspost_data, aes(years_from_obtaining_usa_affilation,median_p_full), linetype = "dotted", size = 1, position = position_jitter(w=0.05, h=0),alpha = 0.6) +
+  geom_errorbar(aes(ymin = mean_p_full-se_p_full, ymax = mean_p_full+se_p_full), width = 0.2) +
+  theme_classic()+
+  theme(legend.position="bottom",
+        legend.title = element_blank()) +
+  scale_color_manual(values=c("palevioletred","lightblue")) +
+  ylab("Average (SE) number of publications") +
+  xlab("Years from move") +
+  scale_x_continuous(breaks = seq(-2,5,1)) 
 
-published_in_first_year_h_index_on_year_prior <- published_in_first_year_fiveyearspost %>% 
-  left_join(published_in_first_year_matched_dataset) %>%  
-  filter(years_from_obtaining_usa_affilation < 0) %>% 
-  group_by(cluster_id) %>% 
-  summarise(condition = first(condition),
-            sum_ncs = sum(ncs_frac_yearsum),
-            pre_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
-  select(cluster_id, condition, pre_move_h_index)
+descriptive_5yearsplot_ncs.plot <- ggplot(descriptive_5yearspost_data, aes( years_from_obtaining_usa_affilation,mean_ncs_full_mean, group = condition, colour = condition, shape = condition)) +
+  geom_point(size = 3) +
+  geom_line(size = 1) +
+  geom_line(data = descriptive_5yearspost_data, aes(years_from_obtaining_usa_affilation,median_ncs_full_mean), linetype = "dotted", size = 1, position = position_jitter(w=0.05, h=0),alpha = 0.6) +
+  geom_errorbar(aes(ymin = mean_ncs_full_mean-se_ncs_full_mean, ymax = mean_ncs_full_mean+se_ncs_full_mean), width = 0.2) +
+  theme_classic()+
+  theme(legend.position="bottom",
+        legend.title = element_blank()) +
+  scale_color_manual(values=c("palevioletred","lightblue")) +
+  ylab("Average (SE) normalised citation score") +
+  xlab("Years from move") +
+  scale_x_continuous(breaks = seq(-2,5,1))
 
-published_in_first_year_h_index_data <- published_in_first_year_h_index_on_year_prior %>% left_join(published_in_first_year_hindex_at_5years_post) %>% mutate(change_in_hindex = post_move_h_index-pre_move_h_index)
-published_in_first_year_h_index_data_new <- published_in_first_year_h_index_data %>% pivot_longer(!c(cluster_id,condition, change_in_hindex), names_to = "pre_or_post", values_to = "hindex") %>% mutate(pre_or_post = factor(gsub("_h_index", "",pre_or_post), levels = c("pre_move", "post_move"), labels = c("Pre-move", "Post-move")))
+descriptive_5yearsplot_njs.plot <- ggplot(descriptive_5yearspost_data, aes( years_from_obtaining_usa_affilation,mean_njs_full_mean, group = condition, colour = condition, shape = condition)) +
+  geom_point(size = 3) +
+  geom_line(size = 1) +
+  geom_line(data = descriptive_5yearspost_data, aes(years_from_obtaining_usa_affilation,median_njs_full_mean), linetype = "dotted", size = 1, position = position_jitter(w=0.05, h=0),alpha = 0.6) +
+  geom_errorbar(aes(ymin = mean_njs_full_mean-se_mean_njs_full_mean, ymax = mean_njs_full_mean+se_mean_njs_full_mean),width = 0.2) +
+  theme_classic()+
+  theme(legend.position="bottom",
+        legend.title = element_blank()) +
+  scale_color_manual(values=c("palevioletred","lightblue")) +
+  ylab("Average (SE) normalised journal score") +
+  xlab("Years from move") +
+  scale_x_continuous(breaks = seq(-2,5,1)) 
+
+descriptive_5yearsplot_topjournals.plot <- ggplot(descriptive_5yearspost_data, aes( years_from_obtaining_usa_affilation,mean_njs_full_over2_yearsum, group = condition, colour = condition, shape = condition)) +
+  geom_point(size = 3) +
+  geom_line(size = 1) +
+  geom_line(data = descriptive_5yearspost_data, aes(years_from_obtaining_usa_affilation,median_njs_full_over2_yearsum), linetype = "dotted", size = 1, position = position_jitter(w=0.05, h=0),alpha = 0.6) +
+  geom_errorbar(aes(ymin = mean_njs_full_over2_yearsum-se_njs_full_over2_yearsum, ymax = mean_njs_full_over2_yearsum+se_njs_full_over2_yearsum),width = 0.2) +
+  theme_classic()+
+  theme(legend.position="bottom",
+        legend.title = element_blank()) +
+  scale_color_manual(values=c("palevioletred","lightblue")) +
+  ylab("Average (SE) sum of top journal publications") +
+  xlab("Years from move") +
+  scale_x_continuous(breaks = seq(-2,5,1)) 
+
+descriptive_5yearsplot_topcited.plot <- ggplot(descriptive_5yearspost_data, aes( years_from_obtaining_usa_affilation,mean_p_top_prop10_full_yearsum, group = condition, colour = condition, shape = condition)) +
+  geom_point(size = 3) +
+  geom_line(size = 1) +
+  geom_line(data = descriptive_5yearspost_data, aes(years_from_obtaining_usa_affilation,median_p_top_prop10_full_yearsum), linetype = "dotted", size = 1, position = position_jitter(w=0.05, h=0),alpha = 0.6) +
+  geom_errorbar(aes(ymin = mean_p_top_prop10_full_yearsum-se_mean_p_top_prop10_full_yearsum, ymax = mean_p_top_prop10_full_yearsum+se_mean_p_top_prop10_full_yearsum),width = 0.2) +
+  theme_classic()+
+  theme(legend.position="bottom",
+        legend.title = element_blank()) +
+  scale_color_manual(values=c("palevioletred","lightblue")) +
+  ylab("Average (SE) sum of top10% most cited papers") +
+  xlab("Years from move") +
+  scale_x_continuous(breaks = seq(-2,5,1))
+
+##
+
+GeomSplitViolin <- ggproto(
+  "GeomSplitViolin",
+  GeomViolin,
+  draw_group = function(self, data, ..., draw_quantiles = NULL) {
+    data <- transform(data,
+                      xminv = x - violinwidth * (x - xmin),
+                      xmaxv = x + violinwidth * (xmax - x)
+    )
+    grp <- data[1, "group"]
+    newdata <- plyr::arrange(
+      transform(data, x = if (grp %% 2 == 1) xminv else xmaxv),
+      if (grp %% 2 == 1) y else -y
+    )
+    newdata <- rbind(newdata[1, ], newdata, newdata[nrow(newdata), ], newdata[1, ])
+    newdata[c(1, nrow(newdata) - 1, nrow(newdata)), "x"] <- round(newdata[1, "x"])
+    if (length(draw_quantiles) > 0 & !scales::zero_range(range(data$y))) {
+      stopifnot(all(draw_quantiles >= 0), all(draw_quantiles <= 1))
+      quantiles <- ggplot2:::create_quantile_segment_frame(data, draw_quantiles)
+      aesthetics <- data[rep(1, nrow(quantiles)), setdiff(names(data), c("x", "y")), drop = FALSE]
+      aesthetics$alpha <- rep(1, nrow(quantiles))
+      both <- cbind(quantiles, aesthetics)
+      quantile_grob <- GeomPath$draw_panel(both, ...)
+      ggplot2:::ggname(
+        "geom_split_violin",
+        grid::grobTree(GeomPolygon$draw_panel(newdata, ...), quantile_grob)
+      )
+    } else {
+      ggplot2:::ggname("geom_split_violin", GeomPolygon$draw_panel(newdata, ...))
+    }
+  }
+)
+
+geom_split_violin <- function(mapping = NULL,
+                              data = NULL,
+                              stat = "ydensity",
+                              position = "identity", ...,
+                              draw_quantiles = NULL,
+                              trim = TRUE,
+                              scale = "area",
+                              na.rm = FALSE,
+                              show.legend = NA,
+                              inherit.aes = TRUE) {
+  layer(
+    data = data,
+    mapping = mapping,
+    stat = stat,
+    geom = GeomSplitViolin,
+    position = position,
+    show.legend = show.legend,
+    inherit.aes = inherit.aes,
+    params = list(
+      trim = trim,
+      scale = scale,
+      draw_quantiles = draw_quantiles,
+      na.rm = na.rm, ...
+    )
+  )
+}
 
 
-vioplot(hindex ~ pre_or_post, data = published_in_first_year_h_index_data_new %>% filter(condition == "stayers"), h = 0.1, col = "lightblue", plotCentre = "line", 
-        side = "left", areaEqual = F, ylab = NULL,ylim = c(0, 4))
-vioplot(hindex ~ pre_or_post, data = published_in_first_year_h_index_data_new %>% filter(condition == "movers"), h = 0.1, col = "palevioletred", plotCentre = "line", 
-        side = "right", add = T,areaEqual = F,ylim = c(0, 4))
-#legend("topleft", fill = c("lightblue", "palevioletred"), legend = c("Premove", "5 years post move"), title = NULL)
+violinplot_hindex <- ggplot(h_index_data_new, aes(pre_or_post,hindex, fill = condition)) + 
+  geom_split_violin() + 
+  theme_classic()+
+  stat_summary(fun = median, geom = "crossbar", 
+               width = 0.25,
+               position = position_dodge(width = .25),
+  ) +
+  scale_fill_manual(values = c("lightblue", "palevioletred")) +
+  ylab("'fractionalised h-index'") +
+  xlab("Pre vs post (5 yrs) move") +
+  ylim(0, 2.8)
 
-
+descriptive_5yearsplot.panelplot <- ggarrange(descriptive_5yearsplot_pubs.plot,descriptive_5yearsplot_ncs.plot,descriptive_5yearsplot_njs.plot,descriptive_5yearsplot_topjournals.plot,descriptive_5yearsplot_topcited.plot,violinplot_hindex, common.legend = T, labels = "AUTO",vjust =1, hjust =-2)
+ggsave(descriptive_5yearsplot.panelplot, filename = "plots/Fig4. 5yearplot_a.pdf")
 

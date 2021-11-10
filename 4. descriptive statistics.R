@@ -7,15 +7,32 @@ pacman::p_load(cowplot, dplyr, vioplot, ggplot2)
 dim(matched_dataset) #47736 years of data
 dim(matched_dataset %>% filter(career_over == F)) #41065 years of actual career
 n_distinct(matched_dataset$cluster_id) #3978 resarchers
+n_distinct(matched_dataset$pair_id) #1989 pairs
 
 # Descriptive info about the final matched dataset
 
-matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>%  count(discipline) #How many matches per discipline
-matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_country) %>% print(n=100) #How many matches per country
+matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>%  count(discipline) %>% mutate(individual_n = n*2, for_table = paste0(individual_n, " (", n,")")) %>% select(discipline, for_table) %>%  write.csv("tables/S1_discipline.csv")  #How many matches per discipline
+matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_country) %>% mutate(individual_n = n*2, for_table = paste0(individual_n, " (", n,")")) %>% select(origin_country, for_table) %>%  write.csv("tables/S1_countries.csv")  #How many matches per country
 matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_region) %>% print(n=100) #How many matches per region
 matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(gender) #How many matches per gender
-matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(origin_type) #how many types of origin institution per match. i manually went through the NA - 14 = education, 1 = archive, 25 = facility, 12 = government, 14 = healthcare, 6 = nonprofit
-matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(USA_type) #how many types of USA institution per match. i manually went through the NA - 1 = education, 1 =archive, 1 = facility, 1= gov, 2 = health, 4 = nonprofit
+
+matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% 
+  count(origin_type) %>% 
+  left_join(read.csv("raw_data/missing_orgin_types.csv") %>% count(origin_type) %>% select(origin_type, to_add = n)) %>% 
+  mutate(across(c(n, to_add), .fns = ~replace_na(.,0))) %>% 
+  mutate(final_count = n+to_add) %>% 
+  filter(!is.na(origin_type)) %>% 
+  select(origin_type, final_count) %>% 
+  mutate(individual_n = final_count*2, for_table = paste0(individual_n, " (", final_count,")")) %>% select(origin_type, for_table) %>%  write.csv("tables/S1_origin_type.csv")#how many types of origin institution per match. 
+
+matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>% count(USA_type) %>% #how many types of USA institution per match.
+  mutate(NA_to_add = c(1, 0, 1, 1, 1, 2, 4,0)) %>%  # i manually went through the NA - 1 = education, 1 =archive, 1 = facility, 1= gov, 2 = health, 4 = nonprofit
+  filter(!is.na(USA_type)) %>% 
+  mutate(final_sum = n+NA_to_add) %>% 
+  select(USA_type, final_sum) %>%  
+  mutate(individual_n = final_sum*2, for_table = paste0(individual_n, " (", final_sum,")")) %>% 
+  select(USA_type, for_table) %>% 
+  write.csv("tables/S1_usa_type.csv")
 
 matched_dataset %>% filter(years_from_obtaining_usa_affilation >= -5, years_from_obtaining_usa_affilation <= 2) %>% summarise(measure = "p_full_yearsum", mean = mean(p_full_yearsum), median = median(p_full_yearsum), sd = sd(p_full_yearsum), min = min(p_full_yearsum),max = max(p_full_yearsum)) %>% 
   rbind(matched_dataset %>% filter(years_from_obtaining_usa_affilation >= -5, years_from_obtaining_usa_affilation <= 2) %>% summarise(measure = "p_frac_yearsum", mean = mean(p_frac_yearsum, na.rm = T), median = median(p_frac_yearsum, na.rm = T), sd = sd(p_frac_yearsum, na.rm = T), min = min(p_frac_yearsum, na.rm = T),max = max(p_frac_yearsum, na.rm = T))) %>% 
@@ -26,7 +43,8 @@ matched_dataset %>% filter(years_from_obtaining_usa_affilation >= -5, years_from
   rbind(matched_dataset %>% filter(years_from_obtaining_usa_affilation >= -5, years_from_obtaining_usa_affilation <= 2) %>% summarise(measure = "njs_full_over2_yearsum", mean = mean(njs_full_over2_yearsum), median = median(njs_full_over2_yearsum), sd = sd(njs_full_over2_yearsum), min = min(njs_full_over2_yearsum),max = max(njs_full_over2_yearsum))) %>% 
   rbind(matched_dataset %>% filter(years_from_obtaining_usa_affilation >= -5, years_from_obtaining_usa_affilation <= 2) %>% summarise(measure = "njs_full_over2_frac_yearsum", mean = mean(njs_full_over2_frac_yearsum), median = median(njs_full_over2_frac_yearsum), sd = sd(njs_full_over2_frac_yearsum), min = min(njs_full_over2_frac_yearsum),max = max(njs_full_over2_frac_yearsum))) %>% 
   rbind(matched_dataset %>% filter(years_from_obtaining_usa_affilation >= -5, years_from_obtaining_usa_affilation <= 2) %>% summarise(measure = "p_top_prop10_full_yearsum", mean = mean(p_top_prop10_full_yearsum), median = median(p_top_prop10_full_yearsum), sd = sd(p_top_prop10_full_yearsum), min = min(p_top_prop10_full_yearsum),max = max(p_top_prop10_full_yearsum))) %>% 
-  rbind(matched_dataset %>% filter(years_from_obtaining_usa_affilation >= -5, years_from_obtaining_usa_affilation <= 2) %>% summarise(measure = "p_top_prop10_frac_yearsum", mean = mean(p_top_prop10_frac_yearsum), median = median(p_top_prop10_frac_yearsum), sd = sd(p_top_prop10_frac_yearsum), min = min(p_top_prop10_frac_yearsum),max = max(p_top_prop10_frac_yearsum)))
+  rbind(matched_dataset %>% filter(years_from_obtaining_usa_affilation >= -5, years_from_obtaining_usa_affilation <= 2) %>% summarise(measure = "p_top_prop10_frac_yearsum", mean = mean(p_top_prop10_frac_yearsum), median = median(p_top_prop10_frac_yearsum), sd = sd(p_top_prop10_frac_yearsum), min = min(p_top_prop10_frac_yearsum),max = max(p_top_prop10_frac_yearsum))) %>% 
+  write.csv("tables/S1_outcome_descriptives.csv")
 
 #############################################
 ######## MAKING RAW DATA PLOTS ##############
