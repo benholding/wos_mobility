@@ -342,8 +342,8 @@ movers_dataset_final <- step14 %>%
          difference_in_qs_overall_ranking_quantile = origin_qs_overall_rank_quartiles-USA_qs_overall_rank_quartiles, #a higher score represents moving upwards in ranking in USA
          #difference_in_pptop10 = origin_pp_top10_mean-USA_pp_top10_mean,
          difference_in_pptop10_quantile = origin_pp_top10_mean_quantile-USA_pp_top10_mean_quantile, #a higher score represents moving upwards in ranking in USA
-         gelman_difference_in_qs_overall_score = effectsize::standardize(USA_qs_overall_score_mean-origin_qs_overall_score_mean, two_sd = T),
-         gelman_difference_in_pptop10 = effectsize::standardize(USA_pp_top10_mean-origin_pp_top10_mean, two_sd=T)) #a higher score represents moving upwards
+         gelman_difference_in_qs_overall_score = (USA_qs_overall_score_mean-origin_qs_overall_score_mean)/(2*sd(USA_qs_overall_score_mean-origin_qs_overall_score_mean, na.rm =T)),
+         gelman_difference_in_pptop10 = (USA_pp_top10_mean-origin_pp_top10_mean)/(2*sd(USA_pp_top10_mean-origin_pp_top10_mean, na.rm=T))) #a higher score represents moving upwards
   
 #how many eligible movers to USA do have?
 length(unique(movers_dataset_final$cluster_id)) #2368

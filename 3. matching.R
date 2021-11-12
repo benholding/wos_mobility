@@ -1,5 +1,5 @@
 #4. matching movers and non-movers
-library(dplyr)
+pacman::p_load(dplyr, tidyr,stringr)
 load(file = "for_matching.RData")
 
 #########################################################################

@@ -29,7 +29,7 @@ controlled_did_model_pfull <- att_gt(yname = "p_full_yearsum",
 
 controlled_did_model_pfull_dynamic_short <- aggte(controlled_did_model_pfull, type = "dynamic", min_e = -5, max_e = 2)
 summary(controlled_did_model_pfull_dynamic_short)
-controlled_p_full_did_plot <- ggdid(controlled_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Number of publications (yearly sum)")
+controlled_p_full_did_plot <- ggdid(controlled_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (year sum)")
 
 # Normalised citation score #
 
@@ -47,7 +47,7 @@ controlled_did_model_ncs_full_yearmean <- att_gt(yname = "ncs_full_mean",
 
 controlled_did_model_ncs_full_dynamic_short <- aggte(controlled_did_model_ncs_full_yearmean, type = "dynamic", min_e = -5, max_e = 2)
 summary(controlled_did_model_ncs_full_dynamic_short)
-controlled_ncs_full_did_plot <- ggdid(controlled_did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Field-normalised citation score (yearly mean)")
+controlled_ncs_full_did_plot <- ggdid(controlled_did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Citation score (year mean)")
 
 # Normalised journal score #
 controlled_did_model_njs_full<- att_gt(yname = "njs_full_mean",
@@ -64,7 +64,7 @@ controlled_did_model_njs_full<- att_gt(yname = "njs_full_mean",
 
 controlled_did_model_njs_full_dynamic_short <- aggte(controlled_did_model_njs_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(controlled_did_model_njs_full_dynamic_short)
-controlled_njs_full_did_plot <- ggdid(controlled_did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Field-normalised journal score (yearly mean)")
+controlled_njs_full_did_plot <- ggdid(controlled_did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Journal score (year mean)")
 
 # Number of "top journals" (njs >2 ) #
 controlled_did_model_njs_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
@@ -81,7 +81,7 @@ controlled_did_model_njs_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
 
 controlled_did_model_njs_topjournals_dynamic_short <- aggte(controlled_did_model_njs_topjournals, type = "dynamic", min_e = -5, max_e = 2)
 summary(controlled_did_model_njs_topjournals_dynamic_short)
-controlled_njs_topjournals_did_plot <- ggdid(controlled_did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Number of top journal (NJS >2) articles (yearly sum")
+controlled_njs_topjournals_did_plot <- ggdid(controlled_did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top journal publications (year sum)")
 
 # Top cited papers #
 controlled_did_model_p_top_prop10_full<- att_gt(yname = "p_top_prop10_full_yearsum",
@@ -97,7 +97,7 @@ controlled_did_model_p_top_prop10_full<- att_gt(yname = "p_top_prop10_full_years
 
 controlled_did_model_p_top_prop10_full_dynamic_short <- aggte(controlled_did_model_p_top_prop10_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(controlled_did_model_p_top_prop10_full_dynamic_short)
-controlled_pp10_full_did_plot <- ggdid(controlled_did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Number of top 10% cited papers in field (yearly sum)")
+controlled_pp10_full_did_plot <- ggdid(controlled_did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top cited publications (year sum)")
 
 # Check 1, step 2 - making a panel plot for all the models in Check 1 #
 robustness_check_performance_control <- ggarrange(controlled_p_full_did_plot, 
@@ -105,8 +105,8 @@ robustness_check_performance_control <- ggarrange(controlled_p_full_did_plot,
           controlled_njs_full_did_plot, 
           controlled_njs_topjournals_did_plot,
           controlled_pp10_full_did_plot,
-          labels = "AUTO", common.legend = T, legend = "bottom", ncol=2,nrow=3) %>% 
-  annotate_figure(top = text_grob("Difference-in-difference results using a sample matched on prior performance"))
+          labels = "AUTO", common.legend = T, legend = "bottom", ncol=2,nrow=3, hjust=-2) %>% 
+  annotate_figure(top = text_grob("Difference-in-differences results using a sample matched on prior performance"))
 
 ggexport(robustness_check_performance_control, filename = "plots/S6_robustness_performancecontrol.pdf")
 
@@ -136,7 +136,7 @@ leidenonly_did_model_pfull <- att_gt(yname = "p_full_yearsum",
 
 leidenonly_did_model_pfull_dynamic_short <- aggte(leidenonly_did_model_pfull, type = "dynamic", min_e = -5, max_e = 2)
 summary(leidenonly_did_model_pfull_dynamic_short)
-leidenonly_p_full_did_plot <- ggdid(leidenonly_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Number of publications (yearly sum)")
+leidenonly_p_full_did_plot <- ggdid(leidenonly_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (year sum)")
 
 # Normalised citation score
 leidenonly_did_model_ncs_full_yearmean <- att_gt(yname = "ncs_full_mean",
@@ -153,7 +153,7 @@ leidenonly_did_model_ncs_full_yearmean <- att_gt(yname = "ncs_full_mean",
 
 leidenonly_did_model_ncs_full_dynamic_short <- aggte(leidenonly_did_model_ncs_full_yearmean, type = "dynamic", min_e = -5, max_e = 2)
 summary(leidenonly_did_model_ncs_full_dynamic_short)
-leidenonly_ncs_full_did_plot <- ggdid(leidenonly_did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Field-normalised citation score (yearly mean)")
+leidenonly_ncs_full_did_plot <- ggdid(leidenonly_did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Citation score (year mean)")
 
 # Normalised journal score
 leidenonly_did_model_njs_full<- att_gt(yname = "njs_full_mean",
@@ -170,7 +170,7 @@ leidenonly_did_model_njs_full<- att_gt(yname = "njs_full_mean",
 
 leidenonly_did_model_njs_full_dynamic_short <- aggte(leidenonly_did_model_njs_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(leidenonly_did_model_njs_full_dynamic_short)
-leidenonly_njs_full_did_plot <- ggdid(leidenonly_did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Field-normalised journal score (yearly mean)")
+leidenonly_njs_full_did_plot <- ggdid(leidenonly_did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Journal score (year mean)")
 
 
 # Top journal publications
@@ -188,7 +188,7 @@ leidenonly_did_model_njs_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
 
 leidenonly_did_model_njs_topjournals_dynamic_short <- aggte(leidenonly_did_model_njs_topjournals, type = "dynamic", min_e = -5, max_e = 2)
 summary(leidenonly_did_model_njs_topjournals_dynamic_short)
-leidenonly_njs_topjournals_did_plot <- ggdid(leidenonly_did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Number of top journal (NJS >2) articles (yearly sum")
+leidenonly_njs_topjournals_did_plot <- ggdid(leidenonly_did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top journal publications (year sum)")
 
 # top cited papers
 leidenonly_did_model_p_top_prop10_full<- att_gt(yname = "p_top_prop10_full_yearsum",
@@ -204,7 +204,7 @@ leidenonly_did_model_p_top_prop10_full<- att_gt(yname = "p_top_prop10_full_years
 
 leidenonly_did_model_p_top_prop10_full_dynamic_short <- aggte(leidenonly_did_model_p_top_prop10_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(leidenonly_did_model_p_top_prop10_full_dynamic_short)
-leidenonly_pp10_full_did_plot <- ggdid(leidenonly_did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Number of top 10% cited papers in field (yearly sum)")
+leidenonly_pp10_full_did_plot <- ggdid(leidenonly_did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top cited publications (year sum)")
 
 # Check 2, step 3 - making panel plot of the check 2 DID models #
 
@@ -213,8 +213,8 @@ robustness_check_leiden_only <- ggarrange(leidenonly_p_full_did_plot,
           leidenonly_njs_full_did_plot, 
           leidenonly_njs_topjournals_did_plot,
           leidenonly_pp10_full_did_plot,
-          common.legend = T, legend = "bottom", ncol=2,nrow=3)%>% 
-  annotate_figure(top = text_grob("Difference-in-difference results with an only-leiden ranked origin institute sample"))
+          common.legend = T, legend = "bottom", ncol=2,nrow=3, hjust=-2)%>% 
+  annotate_figure(top = text_grob("Difference-in-differences results with an only-leiden ranked origin institute sample"))
 
 ggexport(robustness_check_leiden_only, filename = "plots/S7_robustness_leiden_only.pdf")
 
@@ -241,7 +241,7 @@ notyettreated_did_model_pfull <- att_gt(yname = "p_full_yearsum",
 
 notyettreated_did_model_pfull_dynamic_short <- aggte(notyettreated_did_model_pfull, type = "dynamic", min_e = -5, max_e = 2)
 summary(notyettreated_did_model_pfull_dynamic_short)
-notyettreated_p_full_did_plot <- ggdid(notyettreated_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Number of publications (yearly sum)")
+notyettreated_p_full_did_plot <- ggdid(notyettreated_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (year sum)")
 
 ## normalised citation score
 #year mean
@@ -259,7 +259,7 @@ notyettreated_did_model_ncs_full_yearmean <- att_gt(yname = "ncs_full_mean",
 
 notyettreated_did_model_ncs_full_dynamic_short <- aggte(notyettreated_did_model_ncs_full_yearmean, type = "dynamic", min_e = -5, max_e = 2)
 summary(notyettreated_did_model_ncs_full_dynamic_short)
-notyettreated_ncs_full_did_plot <- ggdid(notyettreated_did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Field-normalised citation score (yearly mean)")
+notyettreated_ncs_full_did_plot <- ggdid(notyettreated_did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Citation score (year mean)")
 
 # normalised journal score full
 notyettreated_did_model_njs_full<- att_gt(yname = "njs_full_mean",
@@ -276,7 +276,7 @@ notyettreated_did_model_njs_full<- att_gt(yname = "njs_full_mean",
 
 notyettreated_did_model_njs_full_dynamic_short <- aggte(notyettreated_did_model_njs_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(notyettreated_did_model_njs_full_dynamic_short)
-notyettreated_njs_full_did_plot <- ggdid(notyettreated_did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Field-normalised journal score (yearly mean)")
+notyettreated_njs_full_did_plot <- ggdid(notyettreated_did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Journal score (year mean)")
 
 
 # normalised journal score - number of "top journals" (njs >2 ) per year
@@ -294,7 +294,7 @@ notyettreated_did_model_njs_topjournals <- att_gt(yname = "njs_full_over2_yearsu
 
 notyettreated_did_model_njs_topjournals_dynamic_short <- aggte(notyettreated_did_model_njs_topjournals, type = "dynamic", min_e = -5, max_e = 2)
 summary(notyettreated_did_model_njs_topjournals_dynamic_short)
-notyettreated_njs_topjournals_did_plot <- ggdid(notyettreated_did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Number of top journal (NJS >2) articles (yearly sum")
+notyettreated_njs_topjournals_did_plot <- ggdid(notyettreated_did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top journal publications (year sum)")
 
 # p_top_prop10_full
 notyettreated_did_model_p_top_prop10_full<- att_gt(yname = "p_top_prop10_full_yearsum",
@@ -310,7 +310,7 @@ notyettreated_did_model_p_top_prop10_full<- att_gt(yname = "p_top_prop10_full_ye
 
 notyettreated_did_model_p_top_prop10_full_dynamic_short <- aggte(notyettreated_did_model_p_top_prop10_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(notyettreated_did_model_p_top_prop10_full_dynamic_short)
-notyettreated_pp10_full_did_plot <- ggdid(notyettreated_did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Number of top 10% cited papers in field (yearly sum)")
+notyettreated_pp10_full_did_plot <- ggdid(notyettreated_did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top cited publications (year sum)")
 
 #check 3, step 3 - making panel plots #
 robustness_check_notyettreated<- ggarrange(notyettreated_p_full_did_plot, 
@@ -318,8 +318,8 @@ robustness_check_notyettreated<- ggarrange(notyettreated_p_full_did_plot,
           notyettreated_njs_full_did_plot, 
           notyettreated_njs_topjournals_did_plot,
           notyettreated_pp10_full_did_plot,
-          common.legend = T, legend = "bottom", ncol=2,nrow=3)%>% 
-  annotate_figure(top = text_grob("Difference-in-difference results with control group as those that have not yet moved"))
+          common.legend = T, legend = "bottom", ncol=2,nrow=3, hjust=-2)%>% 
+  annotate_figure(top = text_grob("Difference-in-differences results with control group as those that have not yet moved"))
 
 ggexport(robustness_check_notyettreated, filename = "plots/S8_robustness_notyettreated.pdf")
 
@@ -343,7 +343,7 @@ did_model_pfrac <- att_gt(yname = "p_frac_yearsum",
 
 did_model_pfrac_dynamic_short <- aggte(did_model_pfrac, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_pfrac_dynamic_short)
-p_frac_did_plot <- ggdid(did_model_pfrac_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Fractionised number of publications (yearly sum)")
+p_frac_did_plot <- ggdid(did_model_pfrac_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Frac. publications (year sum)")
 
 #Normalised citation score
 did_model_ncs_frac_yearmean <- att_gt(yname = "ncs_frac_mean",
@@ -359,7 +359,7 @@ did_model_ncs_frac_yearmean <- att_gt(yname = "ncs_frac_mean",
 #will give an error about missing data (because people don't always publish in a given year...)
 did_model_ncs_frac_dynamic_short <- aggte(did_model_ncs_frac_yearmean, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_ncs_frac_dynamic_short)
-ncs_frac_did_plot <- ggdid(did_model_ncs_frac_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Fracionalised field-normalised citation score (yearly mean)")
+ncs_frac_did_plot <- ggdid(did_model_ncs_frac_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Frac. citation score (year mean)")
 
 # Normalised journal score
 did_model_njs_frac<- att_gt(yname = "njs_frac_mean",
@@ -376,7 +376,7 @@ did_model_njs_frac<- att_gt(yname = "njs_frac_mean",
 
 did_model_njs_frac_dynamic_short <- aggte(did_model_njs_frac, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_njs_frac_dynamic_short)
-njs_frac_did_plot <- ggdid(did_model_njs_frac_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Fractionalised field-normalised journal score (yearly mean)")
+njs_frac_did_plot <- ggdid(did_model_njs_frac_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Frac. journal score (year mean)")
 
 #top journals
 did_model_njs_topjournals_frac <- att_gt(yname = "njs_full_over2_frac_yearsum",
@@ -393,7 +393,7 @@ did_model_njs_topjournals_frac <- att_gt(yname = "njs_full_over2_frac_yearsum",
 
 did_model_njs_topjournals_frac_dynamic_short <- aggte(did_model_njs_topjournals_frac, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_njs_topjournals_frac_dynamic_short)
-njs_topjournals_frac_did_plot <- ggdid(did_model_njs_topjournals_frac_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Number of top journal (NJS >2) articles (yearly sum")
+njs_topjournals_frac_did_plot <- ggdid(did_model_njs_topjournals_frac_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Frac. top journal pubs. (year sum)")
 
 
 # Top cited papers
@@ -410,7 +410,7 @@ did_model_p_top_prop10_frac<- att_gt(yname = "p_top_prop10_frac_yearsum",
 
 did_model_p_top_prop10_frac_dynamic_short <- aggte(did_model_p_top_prop10_frac, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_p_top_prop10_frac_dynamic_short)
-pp10_frac_did_plot <- ggdid(did_model_p_top_prop10_frac_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Fractionalised number of top 10% cited papers in field (yearly sum)")
+pp10_frac_did_plot <- ggdid(did_model_p_top_prop10_frac_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Frac.top cited publications (year sum)")
 
 # Check 4, step 2 - making panel plots of the difference-in-difference results #
 robustness_check_fractionalised <- ggarrange(p_frac_did_plot, 
@@ -418,8 +418,8 @@ robustness_check_fractionalised <- ggarrange(p_frac_did_plot,
           njs_frac_did_plot, 
           njs_topjournals_frac_did_plot,
           pp10_frac_did_plot,
-          common.legend = T, legend = "bottom", ncol=2,nrow=3) %>% 
-  annotate_figure(top = text_grob("Difference-in-difference results using fractional publication measures"))
+          common.legend = T, legend = "bottom", ncol=2,nrow=3, hjust=-2) %>% 
+  annotate_figure(top = text_grob("Difference-in-differences results using fractional publication measures"))
 
 ggexport(robustness_check_fractionalised, filename = "plots/S9_robustness_fractionalised.pdf")
 
@@ -454,7 +454,7 @@ firstyear_did_model_pfull <- att_gt(yname = "p_full_yearsum",
 
 firstyear_did_model_pfull_dynamic_short <- aggte(firstyear_did_model_pfull, type = "dynamic", min_e = -5, max_e = 2)
 summary(firstyear_did_model_pfull_dynamic_short)
-firstyear_p_full_did_plot <- ggdid(firstyear_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Number of publications (yearly sum)")
+firstyear_p_full_did_plot <- ggdid(firstyear_did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (year sum)")
 
 
 # Normalised citation score
@@ -472,7 +472,7 @@ firstyear_did_model_ncs_full_yearmean <- att_gt(yname = "ncs_full_mean",
 
 firstyear_did_model_ncs_full_dynamic_short <- aggte(firstyear_did_model_ncs_full_yearmean, type = "dynamic", min_e = -5, max_e = 2)
 summary(firstyear_did_model_ncs_full_dynamic_short)
-firstyear_ncs_full_did_plot <- ggdid(firstyear_did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Field-normalised citation score (yearly mean)")
+firstyear_ncs_full_did_plot <- ggdid(firstyear_did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Citation score (year mean)")
 
 # Normalised journal score
 firstyear_did_model_njs_full<- att_gt(yname = "njs_full_mean",
@@ -489,7 +489,7 @@ firstyear_did_model_njs_full<- att_gt(yname = "njs_full_mean",
 
 firstyear_did_model_njs_full_dynamic_short <- aggte(firstyear_did_model_njs_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(firstyear_did_model_njs_full_dynamic_short)
-firstyear_njs_full_did_plot <- ggdid(firstyear_did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Field-normalised journal score (yearly mean)")
+firstyear_njs_full_did_plot <- ggdid(firstyear_did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Journal score (year mean)")
 
 # Top journal papers
 firstyear_did_model_njs_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
@@ -506,7 +506,7 @@ firstyear_did_model_njs_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
 
 firstyear_did_model_njs_topjournals_dynamic_short <- aggte(firstyear_did_model_njs_topjournals, type = "dynamic", min_e = -5, max_e = 2)
 summary(firstyear_did_model_njs_topjournals_dynamic_short)
-firstyear_njs_topjournals_did_plot <- ggdid(firstyear_did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Number of top journal (NJS >2) articles (yearly sum")
+firstyear_njs_topjournals_did_plot <- ggdid(firstyear_did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top journal publications (year sum)")
 
 # Top cited papers
 firstyear_did_model_p_top_prop10_full<- att_gt(yname = "p_top_prop10_full_yearsum",
@@ -522,7 +522,7 @@ firstyear_did_model_p_top_prop10_full<- att_gt(yname = "p_top_prop10_full_yearsu
 
 firstyear_did_model_p_top_prop10_full_dynamic_short <- aggte(firstyear_did_model_p_top_prop10_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(firstyear_did_model_p_top_prop10_full_dynamic_short)
-firstyear_pp10_full_did_plot <- ggdid(firstyear_did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Number of top 10% cited papers in field (yearly sum)")
+firstyear_pp10_full_did_plot <- ggdid(firstyear_did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top cited papers (year sum)")
 
 # Check 5, step 3 - making a panel plot of all these difference in difference analyses #
 robustness_check_firstyear <- ggarrange(firstyear_p_full_did_plot, 
@@ -530,8 +530,8 @@ robustness_check_firstyear <- ggarrange(firstyear_p_full_did_plot,
           firstyear_njs_full_did_plot, 
           firstyear_njs_topjournals_did_plot,
           firstyear_pp10_full_did_plot,
-          common.legend = T, legend = "bottom", ncol=2,nrow=3) %>% 
-  annotate_figure(top = text_grob("Difference-in-difference results using controls who had a publication on the moving year"))
+          common.legend = T, legend = "bottom", ncol=2,nrow=3, hjust=-2) %>% 
+  annotate_figure(top = text_grob("Difference-in-differences results using controls who had a publication on the moving year"))
 
 ggexport(robustness_check_firstyear, filename = "plots/S10_robustness_firstyear.pdf")
 
@@ -584,18 +584,14 @@ diffindiff_data_only_movers_qs_diff <- matched_dataset %>% #the QS ranking moder
          years_from_obtaining_usa_affilation <= 2,
          condition_numeric == 1,
          !is.na(difference_in_qs_overall_ranking_quantile)) %>% 
-  mutate(difference_in_qs_quantile_zeropremove = if_else(post_move == 0, 0, as.double(difference_in_qs_overall_ranking_quantile)),
-         gelman_difference_in_qs_overall_score_zeropremove = if_else(post_move == 0, 0, gelman_difference_in_qs_overall_score),
-         gelman_origin_qs_overall_score_mean = effectsize::standardize(origin_qs_overall_score_mean, two_sd=T))
+  mutate(difference_in_qs_quantile_zeropremove = if_else(post_move == 0, 0, as.double(difference_in_qs_overall_ranking_quantile)))
 
 diffindiff_data_only_movers_leiden_diff <- matched_dataset %>% #the Leiden ranking moderation dataset
   filter(years_from_obtaining_usa_affilation >= -2,
          years_from_obtaining_usa_affilation <= 2,
          condition_numeric == 1,
          !is.na(difference_in_pptop10_quantile)) %>% 
-  mutate(difference_in_pptop10_quantile_zeropremove = if_else(post_move == 0, 0, difference_in_pptop10_quantile),
-         gelman_difference_in_pptop10_zeropremove = if_else(post_move == 0, 0, gelman_difference_in_pptop10),
-         gelman_origin_pp_top10_mean = effectsize::standardize(origin_pp_top10_mean, two_sd = T))
+  mutate(difference_in_pptop10_quantile_zeropremove = if_else(post_move == 0, 0, difference_in_pptop10_quantile))
 
 # check 7, step 2 - the actual moderation analysis (#taking only movers and interacting 2 variables: "moving" with "difference in rank from origin to usa") + making marginal moderation figures#
 
@@ -726,7 +722,12 @@ RC_interaction_plots_left <- ggarrange(RC_pfull_qs_moderation_plot,#Making left 
                                     RC_njs_topjournals_qs_moderation_plot, 
                                     RC_p_top_prop10_full_qs_moderation_plot,
                                     RC_qs_difference_plot,
-                                    common.legend = T, legend = "bottom", ncol=1,nrow=6, labels = "AUTO",hjust = -3, vjust = 2,align = "v") 
+                                    common.legend = T, legend = "bottom", ncol=1,nrow=6, 
+                                    labels = c("a. Publications", "b. Citation Score", "c. Journal Score", "d. Top journal publications", "e. Top cited publications", "f. Ranking change"),
+                                    hjust = -0.1, vjust = -0.1,
+                                    align = "hv",
+                                    font.label = list(size = 10, color = "black", face = "bold.italic", family = NULL)) %>% 
+  annotate_figure(top = text_grob("QS", face = "bold"))
 
 RC_interaction_plots_right <- ggarrange(RC_pfull_pptop10_moderation_plot, #Making right half of panel plot
                                         RC_ncs_full_pptop10_moderation_plot,
@@ -734,11 +735,12 @@ RC_interaction_plots_right <- ggarrange(RC_pfull_pptop10_moderation_plot, #Makin
                                         RC_njs_topjournals_pptop10_moderation_plot,
                                         RC_p_top_prop10_full_pptop10_moderation_plot,
                                         RC_leiden_difference_plot,
-                                     common.legend = T, legend = "bottom", ncol=1,nrow=6, align = "v") 
+                                        common.legend = T, legend = "bottom", ncol=1,nrow=6, align = "v") %>% 
+  annotate_figure(top = text_grob("Leiden", face="bold"))
 
 RC_moderation_plot_grid <- ggarrange(RC_interaction_plots_left, RC_interaction_plots_right) %>% #putting the two halves together
-  annotate_figure(left = text_grob("Estimated Coefficient for moving to USA",rot = 90, size = 10),
-                  bottom = text_grob("Difference in ranking (left: QS, right: Leiden) quantile (positive = USA higher ranked)", size = 10))
+  annotate_figure(left = text_grob("Count                                             Estimated Coefficient for effect of moving to USA",rot = 90, size = 10, hjust = .56),
+                  bottom = text_grob("Difference in ranking quantile (positive = USA higher ranked)", size = 10))
 ggexport(RC_moderation_plot_grid, filename = "plots/S12_robustness_moderation.pdf") #saving the resulting plot
 
 
@@ -850,12 +852,27 @@ write.csv(RC_mediation_table, "tables/S7. Mediation Quantiles.csv")
 ########## ROBUSTNESS CHECK 9 - subsamples with people moving to different levels of prestige ##########
 ########################################################################################################
 
-# Robustness check 9, step 1 - making datasets contaiing only individuals that can be classed as moving up (over 1SD from mean) or moving down (below 1SD from mean) #
-qs_low <- diffindiff_data_only_movers_qs_diff %>% filter(gelman_difference_in_qs_overall_score < mean(gelman_difference_in_qs_overall_score, na.rm=T)-sd(gelman_difference_in_qs_overall_score, na.rm=T)) %>% distinct(pair_id) %>% left_join(matched_dataset, by = "pair_id")
-qs_high <- diffindiff_data_only_movers_qs_diff %>% filter(gelman_difference_in_qs_overall_score > mean(gelman_difference_in_qs_overall_score, na.rm=T)+sd(gelman_difference_in_qs_overall_score, na.rm=T)) %>% distinct(pair_id) %>% left_join(matched_dataset, by = "pair_id")
+diffindiff_data_only_movers_qs_diff2 <- matched_dataset %>% #the QS ranking moderation dataset
+  filter(years_from_obtaining_usa_affilation >= -2,
+         years_from_obtaining_usa_affilation <= 2,
+         condition_numeric == 1,
+         !is.na(gelman_difference_in_qs_overall_score)) %>% 
+  mutate(difference_in_qs_quantile_zeropremove = if_else(post_move == 0, 0, as.double(difference_in_qs_overall_ranking_quantile)))
+
+diffindiff_data_only_movers_leiden_diff2 <- matched_dataset %>% #the Leiden ranking moderation dataset
+  filter(years_from_obtaining_usa_affilation >= -2,
+         years_from_obtaining_usa_affilation <= 2,
+         condition_numeric == 1,
+         !is.na(gelman_difference_in_pptop10)) %>% 
+  mutate(difference_in_pptop10_quantile_zeropremove = if_else(post_move == 0, 0, difference_in_pptop10_quantile))
+
+
+# Robustness check 9, step 1 - making datasets containing only individuals that can be classed as moving up (over 1SD from mean) or moving down (below 1SD from mean) #
+qs_low <- diffindiff_data_only_movers_qs_diff2 %>% filter(gelman_difference_in_qs_overall_score < mean(gelman_difference_in_qs_overall_score, na.rm=T)-sd(gelman_difference_in_qs_overall_score, na.rm=T)) %>% distinct(pair_id) %>% left_join(matched_dataset, by = "pair_id")
+qs_high <- diffindiff_data_only_movers_qs_diff2 %>% filter(gelman_difference_in_qs_overall_score > mean(gelman_difference_in_qs_overall_score, na.rm=T)+sd(gelman_difference_in_qs_overall_score, na.rm=T)) %>% distinct(pair_id) %>% left_join(matched_dataset, by = "pair_id")
   
-leiden_low <- diffindiff_data_only_movers_leiden_diff %>% filter(gelman_difference_in_pptop10 < mean(gelman_difference_in_pptop10, na.rm=T)-sd(gelman_difference_in_pptop10, na.rm=T)) %>% distinct(pair_id) %>% left_join(matched_dataset, by = "pair_id")
-leiden_high <- diffindiff_data_only_movers_leiden_diff %>% filter(gelman_difference_in_pptop10 > mean(gelman_difference_in_pptop10, na.rm=T)+sd(gelman_difference_in_pptop10, na.rm=T)) %>% distinct(pair_id) %>% left_join(matched_dataset, by = "pair_id")
+leiden_low <- diffindiff_data_only_movers_leiden_diff2 %>% filter(gelman_difference_in_pptop10 < mean(gelman_difference_in_pptop10, na.rm=T)-sd(gelman_difference_in_pptop10, na.rm=T)) %>% distinct(pair_id) %>% left_join(matched_dataset, by = "pair_id")
+leiden_high <- diffindiff_data_only_movers_leiden_diff2 %>% filter(gelman_difference_in_pptop10 > mean(gelman_difference_in_pptop10, na.rm=T)+sd(gelman_difference_in_pptop10, na.rm=T)) %>% distinct(pair_id) %>% left_join(matched_dataset, by = "pair_id")
 
 # Robustness check 9, step 2 - running the difference in difference analysis for the four difference subsamples
 # Publications

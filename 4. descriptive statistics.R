@@ -134,7 +134,7 @@ bb <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affila
         legend.position="bottom",
         legend.title = element_blank()) +
   scale_color_manual(values=c("palevioletred","lightblue")) +
-  ylab("Average (SE) normalised citation score") +
+  ylab("Average (SE) citation score") +
   xlab("Years from move") +
   scale_x_continuous(breaks = seq(-5,2,1))+
   scale_y_continuous(limits = c(0.75, 3.4))
@@ -168,7 +168,7 @@ cc <- ggplot(raw_data_plots_means_per_year, aes( years_from_obtaining_usa_affila
         legend.position="bottom",
         legend.title = element_blank()) +
   scale_color_manual(values=c("palevioletred","lightblue")) +
-  ylab("Average (SE) normalised journal score") +
+  ylab("Average (SE) journal score") +
   xlab("Years from move") +
   scale_x_continuous(breaks = seq(-5,2,1)) +
   scale_y_continuous(limits = c(1, 2.6))

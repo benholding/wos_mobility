@@ -24,7 +24,7 @@ did_model_pfull <- att_gt(yname = "p_full_yearsum",
 
 did_model_pfull_dynamic_short <- aggte(did_model_pfull, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_pfull_dynamic_short)
-p_full_did_plot <- ggdid(did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (yearly sum)")
+p_full_did_plot <- ggdid(did_model_pfull_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Publications (year sum)")
 
 esc_B(b = did_model_pfull_dynamic_short$overall.att, sdy = sd(matched_dataset$p_full_yearsum),grp1n = did_model_pfull_dynamic_short$DIDparams$n/2, grp2n = did_model_pfull_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
@@ -43,7 +43,7 @@ did_model_ncs_full_yearmean <- att_gt(yname = "ncs_full_mean",
 
 did_model_ncs_full_dynamic_short <- aggte(did_model_ncs_full_yearmean, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_ncs_full_dynamic_short)
-ncs_full_did_plot <- ggdid(did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Citation score (yearly mean)")
+ncs_full_did_plot <- ggdid(did_model_ncs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Citation score (year mean)")
 
 esc_B(b = did_model_ncs_full_dynamic_short$overall.att, sdy = sd(matched_dataset$ncs_full_mean, na.rm=T),grp1n = did_model_ncs_full_dynamic_short$DIDparams$n/2, grp2n = did_model_ncs_full_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
@@ -62,7 +62,7 @@ did_model_njs_full<- att_gt(yname = "njs_full_mean",
 
 did_model_njs_full_dynamic_short <- aggte(did_model_njs_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_njs_full_dynamic_short)
-njs_full_did_plot <- ggdid(did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = " Journal score (yearly mean)")
+njs_full_did_plot <- ggdid(did_model_njs_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = " Journal score (year mean)")
 
 esc_B(b = did_model_njs_full_dynamic_short$overall.att, sdy = sd(matched_dataset$njs_full_mean, na.rm=T),grp1n = did_model_njs_full_dynamic_short$DIDparams$n/2, grp2n = did_model_njs_full_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
@@ -82,7 +82,7 @@ did_model_njs_topjournals <- att_gt(yname = "njs_full_over2_yearsum",
 
 did_model_njs_topjournals_dynamic_short <- aggte(did_model_njs_topjournals, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_njs_topjournals_dynamic_short)
-njs_topjournals_did_plot <- ggdid(did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top journals (yearly sum njs>2)")
+njs_topjournals_did_plot <- ggdid(did_model_njs_topjournals_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top journal publications (year sum)")
 
 esc_B(b = did_model_njs_topjournals_dynamic_short$overall.att, sdy = sd(matched_dataset$njs_full_over2_yearsum, na.rm=T),grp1n = did_model_njs_topjournals_dynamic_short$DIDparams$n/2, grp2n = did_model_njs_topjournals_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
@@ -100,7 +100,7 @@ did_model_p_top_prop10_full<- att_gt(yname = "p_top_prop10_full_yearsum",
 
 did_model_p_top_prop10_full_dynamic_short <- aggte(did_model_p_top_prop10_full, type = "dynamic", min_e = -5, max_e = 2)
 summary(did_model_p_top_prop10_full_dynamic_short)
-pp10_full_did_plot <- ggdid(did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top cited papers (yearly sum pp10%)")
+pp10_full_did_plot <- ggdid(did_model_p_top_prop10_full_dynamic_short, xlab = "Years from move", ylab = "Treatment effect", title = "Top cited publications (year sum)")
 
 esc_B(b = did_model_p_top_prop10_full_dynamic_short$overall.att, sdy = sd(matched_dataset$p_top_prop10_full_yearsum, na.rm=T),grp1n = did_model_p_top_prop10_full_dynamic_short$DIDparams$n/2, grp2n = did_model_p_top_prop10_full_dynamic_short$DIDparams$n/2,es.type = c("d"))
 
@@ -155,19 +155,17 @@ diffindiff_data_only_movers_qs_diff <- matched_dataset %>% #the QS ranking moder
   filter(years_from_obtaining_usa_affilation >= -2,
          years_from_obtaining_usa_affilation <= 2,
          condition_numeric == 1,
-         !is.na(difference_in_qs_overall_ranking_quantile)) %>% 
-  mutate(difference_in_qs_quantile_zeropremove = if_else(post_move == 0, 0, as.double(difference_in_qs_overall_ranking_quantile)),
-         gelman_difference_in_qs_overall_score_zeropremove = if_else(post_move == 0, 0, gelman_difference_in_qs_overall_score),
-         gelman_origin_qs_overall_score_mean = effectsize::standardize(origin_qs_overall_score_mean, two_sd=T))
+         !is.na(gelman_difference_in_qs_overall_score)) %>% 
+  mutate(gelman_difference_in_qs_overall_score_zeropremove = if_else(post_move == 0, 0, gelman_difference_in_qs_overall_score),
+         gelman_origin_qs_overall_score_mean = origin_qs_overall_score_mean/(2*sd(origin_qs_overall_score_mean, na.rm = T)))
 
 diffindiff_data_only_movers_leiden_diff <- matched_dataset %>% #the Leiden ranking moderation dataset
   filter(years_from_obtaining_usa_affilation >= -2,
          years_from_obtaining_usa_affilation <= 2,
          condition_numeric == 1,
-         !is.na(difference_in_pptop10_quantile)) %>% 
-  mutate(difference_in_pptop10_quantile_zeropremove = if_else(post_move == 0, 0, difference_in_pptop10_quantile),
-         gelman_difference_in_pptop10_zeropremove = if_else(post_move == 0, 0, gelman_difference_in_pptop10),
-         gelman_origin_pp_top10_mean = effectsize::standardize(origin_pp_top10_mean, two_sd = T))
+         !is.na(gelman_difference_in_pptop10)) %>% 
+  mutate(gelman_difference_in_pptop10_zeropremove = if_else(post_move == 0, 0, gelman_difference_in_pptop10),
+         gelman_origin_pp_top10_mean = origin_pp_top10_mean/(2*sd(origin_pp_top10_mean, na.rm = T)))
 
 # step 2b. Running the moderation analysis + making individual plots
 # Publications
@@ -179,7 +177,7 @@ pfull_qs_moderation_plot <- interplot(m = pfull_qs, var1 = "post_move", var2 = "
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits = c(0.25,2), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5),labels=c("-2", "-1", "0", "1")) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5, 1),labels=c("-2", "-1", "0", "1", "2")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 pfull_pptop10_moderation_plot <- interplot(m = pfull_pptop10, var1 = "post_move", var2 = "gelman_difference_in_pptop10") + 
@@ -187,7 +185,7 @@ pfull_pptop10_moderation_plot <- interplot(m = pfull_pptop10, var1 = "post_move"
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits = c(0.25,2), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1),labels=c("-2", "0", "2")) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1, 2),labels=c("-2", "0", "2", "4")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 #Normalised citation score
@@ -199,7 +197,7 @@ ncs_full_qs_moderation_plot <- interplot(m = ncs_full_qs, var1 = "post_move", va
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits = c(-1.3, 2.7), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5),labels=c("-2", "-1", "0", "1")) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5, 1),labels=c("-2", "-1", "0", "1", "2")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 ncs_full_pptop10_moderation_plot <- interplot(m = ncs_full_pptop10, var1 = "post_move", var2 = "gelman_difference_in_pptop10") + 
@@ -207,7 +205,7 @@ ncs_full_pptop10_moderation_plot <- interplot(m = ncs_full_pptop10, var1 = "post
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits = c(-1.3, 2.7), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1),labels=c("-2", "0", "2")) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1, 2),labels=c("-2", "0", "2", "4")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 #normalised Journal score
@@ -219,7 +217,7 @@ njs_full_qs_moderation_plot <- interplot(m = njs_full_qs, var1 = "post_move", va
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits =c(-0.8, 1.7),expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5),labels=c("-2", "-1", "0", "1")) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5, 1),labels=c("-2", "-1", "0", "1", "2")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 njs_full_pptop10_moderation_plot <- interplot(m = njs_full_pptop10, var1 = "post_move", var2 = "gelman_difference_in_pptop10") + 
@@ -227,7 +225,7 @@ njs_full_pptop10_moderation_plot <- interplot(m = njs_full_pptop10, var1 = "post
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits =c(-0.8, 1.7),expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1),labels=c("-2", "0", "2")) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1, 2),labels=c("-2", "0", "2", "4")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 #Top journals
@@ -239,7 +237,7 @@ njs_topjournals_qs_moderation_plot <- interplot(m = njs_topjournals_qs, var1 = "
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits = c(-0.4,1.1), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5),labels=c("-2", "-1", "0", "1")) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5, 1),labels=c("-2", "-1", "0", "1", "2")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 njs_topjournals_pptop10_moderation_plot <- interplot(m = njs_topjournals_pptop10, var1 = "post_move", var2 = "gelman_difference_in_pptop10") + 
@@ -247,7 +245,7 @@ njs_topjournals_pptop10_moderation_plot <- interplot(m = njs_topjournals_pptop10
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits = c(-0.4,1.1), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1),labels=c("-2", "0", "2")) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1, 2),labels=c("-2", "0", "2", "4")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 # Top cited papers
@@ -259,7 +257,7 @@ p_top_prop10_full_qs_moderation_plot <- interplot(m = p_top_prop10_full_qs, var1
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits = c(-0.25,0.85), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5),labels=c("-2", "-1", "0", "1")) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5, 1),labels=c("-2", "-1", "0", "1", "2")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 p_top_prop10_full_pptop10_moderation_plot <- interplot(m = p_top_prop10_full_pptop10, var1 = "post_move", var2 = "gelman_difference_in_pptop10") + 
@@ -267,7 +265,7 @@ p_top_prop10_full_pptop10_moderation_plot <- interplot(m = p_top_prop10_full_ppt
   theme(plot.title = element_text(size = 10),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limits = c(-0.25,0.85),expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1),labels=c("-2", "0", "2")) +
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1, 2),labels=c("-2", "0", "2", "4")) +
   geom_hline(yintercept=0, linetype="dotted")
 
 #step 2c. Making a panel plot that contains all of the moderation analyses + histograms of the raw ranking_difference data
@@ -280,8 +278,8 @@ qs_difference_plot <- ggplot(diffindiff_data_only_movers_qs_diff %>% distinct(cl
         axis.title.y = element_blank(),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limit = c(0,125), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5),labels=c("-2", "-1", "0", "1"))
-
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0.5,0,0.5, 1),labels=c("-2", "-1", "0", "1", "2"))
+  
 leiden_difference_plot <- ggplot(diffindiff_data_only_movers_leiden_diff %>% distinct(cluster_id, .keep_all = T), aes(x = gelman_difference_in_pptop10)) + #histogram of difference in Leiden rankings
   geom_histogram() +
   theme_bw() +
@@ -290,8 +288,8 @@ leiden_difference_plot <- ggplot(diffindiff_data_only_movers_leiden_diff %>% dis
         axis.title.y = element_blank(),
         plot.margin = unit(c(0.2,0.2,0,0.1), "cm")) + # ("top", "right", "bottom", "left")
   scale_y_continuous(limit = c(0,125), expand = c(0,0)) +
-  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1),labels=c("-2", "0", "2"))
-
+  scale_x_continuous(expand = c(0, 0),breaks=c(-1,-0,1, 2),labels=c("-2", "0", "2", "4"))
+  
 interaction_plots_left <- ggarrange(pfull_qs_moderation_plot, #making the left half of the panel plot
           ncs_full_qs_moderation_plot, 
           njs_full_qs_moderation_plot,
@@ -446,9 +444,12 @@ write.csv(mediation_table, "tables/table4. mediation table.csv")
 
 ################## ANALYSIS sSTEP 4. DIFFERENCES IN H-INDEX 5 YEARS AFTER THE MOVE ##################
 
-par(mfrow=c(1,3),mar = c(4, 4, 1, 0.1))
-
-researchers_with_five_years_post_move <- matched_dataset %>% filter(years_from_obtaining_usa_affilation == 5, career_over == 0) %>% distinct(cluster_id)
+researchers_with_five_years_post_move <- matched_dataset %>% 
+  filter(years_from_obtaining_usa_affilation == 5, career_over == 0) %>% 
+  group_by(pair_id) %>% 
+  mutate(number_in_pair_with5years = n()) %>% 
+  filter(number_in_pair_with5years == 2) %>% 
+  distinct(cluster_id)
 
 hindex_at_5years_post <- researchers_with_five_years_post_move %>% 
   left_join(matched_dataset) %>%  
@@ -472,119 +473,6 @@ h_index_data <- h_index_on_year_prior %>% left_join(hindex_at_5years_post) %>% m
 
 h_index_data_new <- h_index_data %>% pivot_longer(!c(cluster_id,condition, change_in_hindex), names_to = "pre_or_post", values_to = "hindex") %>% mutate(pre_or_post = factor(gsub("_h_index", "",pre_or_post), levels = c("pre_move", "post_move"), labels = c("Pre-move", "Post-move")),
                                                                                                                                                          condition = factor(condition, levels = c("stayers", "movers"), labels = c("Stayers", "Movers")))
-
-vioplot(hindex ~ pre_or_post, data = h_index_data_new %>% filter(condition == "stayers"), h = 0.1, col = "lightblue", plotCentre = "line", 
-        side = "left", areaEqual = F, xlab = NULL, ylab = "'fractionalised h-index estimation'",ylim = c(0, 4))
-vioplot(hindex ~ pre_or_post, data = h_index_data_new %>% filter(condition == "movers"), h = 0.1, col = "palevioletred", plotCentre = "line", 
-        side = "right", add = T,areaEqual = F,ylim = c(0, 4))
-#legend("topleft", fill = c("lightblue", "palevioletred"), legend = c("Stayers", "Movers"), title = NULL)
-mtext(text=expression(bold("F")), side = 3, adj = 0)
-
-# # the same but with performance matched
-# 
-# performance_matched_fiveyearspost <- matched_dataset_robustnesscheck %>% filter(years_from_obtaining_usa_affilation == 5, career_over == 0) %>% distinct(cluster_id)
-# 
-# performance_matched_hindex_at_5years_post <- performance_matched_fiveyearspost %>% 
-#   left_join(matched_dataset_robustnesscheck) %>%  
-#   filter(years_from_obtaining_usa_affilation <= 5) %>% 
-#   group_by(cluster_id) %>% 
-#   summarise(condition = first(condition),
-#             sum_ncs = sum(ncs_frac_yearsum),
-#             post_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
-#   select(cluster_id, condition, post_move_h_index) 
-# 
-# performance_matched_h_index_on_year_prior <- performance_matched_fiveyearspost %>% 
-#   left_join(matched_dataset_robustnesscheck) %>%  
-#   filter(years_from_obtaining_usa_affilation < 0) %>% 
-#   group_by(cluster_id) %>% 
-#   summarise(condition = first(condition),
-#             sum_ncs = sum(ncs_frac_yearsum),
-#             pre_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
-#   select(cluster_id, condition, pre_move_h_index)
-# 
-# performance_matched_h_index_data <- performance_matched_h_index_on_year_prior %>% left_join(performance_matched_hindex_at_5years_post) %>% mutate(change_in_hindex = post_move_h_index-pre_move_h_index)
-# performance_matched_h_index_data_new <- performance_matched_h_index_data %>% pivot_longer(!c(cluster_id,condition, change_in_hindex), names_to = "pre_or_post", values_to = "hindex") %>% mutate(pre_or_post = factor(gsub("_h_index", "",pre_or_post), levels = c("pre_move", "post_move"), labels = c("Pre-move", "Post-move")))
-# 
-# vioplot(hindex ~ pre_or_post, data = performance_matched_h_index_data_new %>% filter(condition == "stayers"), h = 0.1, col = "lightblue", plotCentre = "line", 
-#         side = "left", areaEqual = F, ylab = NULL,ylim = c(0, 4))
-# vioplot(hindex ~ pre_or_post, data = performance_matched_h_index_data_new %>% filter(condition == "movers"), h = 0.1, col = "palevioletred", plotCentre = "line", 
-#         side = "right", add = T,areaEqual = F,ylim = c(0, 4))
-# #legend("topleft", fill = c("lightblue", "palevioletred"), legend = c("Premove", "5 years post move"), title = NULL)
-# 
-# # #the same but with leiden ranked at origin
-# # onlyleiden_matched_dataset <- matched_dataset %>% 
-# #   filter(origin_leiden_ranked == 1)
-# # 
-# # 
-# # leidenranked_fiveyearspost <- onlyleiden_matched_dataset %>% filter(years_from_obtaining_usa_affilation == 5, career_over == 0) %>% distinct(cluster_id)
-# # 
-# # leidenranked_hindex_at_5years_post <- leidenranked_fiveyearspost %>% 
-# #   left_join(onlyleiden_matched_dataset) %>%  
-# #   filter(years_from_obtaining_usa_affilation <= 5) %>% 
-# #   group_by(cluster_id) %>% 
-# #   summarise(condition = first(condition),
-# #             sum_ncs = sum(ncs_frac_yearsum),
-# #             post_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
-# #   select(cluster_id, condition, post_move_h_index) 
-# # 
-# # leidenranked_h_index_on_year_prior <- leidenranked_fiveyearspost %>% 
-# #   left_join(onlyleiden_matched_dataset) %>%  
-# #   filter(years_from_obtaining_usa_affilation < 0) %>% 
-# #   group_by(cluster_id) %>% 
-# #   summarise(condition = first(condition),
-# #             sum_ncs = sum(ncs_frac_yearsum),
-# #             pre_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
-# #   select(cluster_id, condition, pre_move_h_index)
-# # 
-# # leidenranked_h_index_data <- leidenranked_h_index_on_year_prior %>% left_join(leidenranked_hindex_at_5years_post) %>% mutate(change_in_hindex = post_move_h_index-pre_move_h_index)
-# # 
-# # vioplot(pre_move_h_index ~ condition, data = leidenranked_h_index_data, h = 0.1, col = "lightblue", plotCentre = "line", 
-# #         side = "left", areaEqual = F, ylab = "'h-index'",ylim = c(0, 4))
-# # vioplot(post_move_h_index ~ condition, data = leidenranked_h_index_data, h = 0.1, col = "palevioletred", plotCentre = "line", 
-# #         side = "right", add = T,areaEqual = F,ylim = c(0, 4))
-# # #legend("topleft", fill = c("lightblue", "palevioletred"), legend = c("Premove", "5 years post move"), title = NULL)
-# 
-# # the same but all controls needed to publish in the moving year
-# pair_ids_to_keep <- matched_dataset %>% 
-#   filter(condition_numeric == 0,
-#          career_year == moving_year,
-#          p_full_yearsum > 0) %>% 
-#   distinct(pair_id)
-# 
-# published_in_first_year_matched_dataset <- 
-#   pair_ids_to_keep %>% left_join(matched_dataset, by = "pair_id")
-# 
-# published_in_first_year_fiveyearspost <- published_in_first_year_matched_dataset %>% filter(years_from_obtaining_usa_affilation == 5, career_over == 0) %>% distinct(cluster_id)
-# 
-# published_in_first_year_hindex_at_5years_post <- published_in_first_year_fiveyearspost %>% 
-#   left_join(published_in_first_year_matched_dataset) %>%  
-#   filter(years_from_obtaining_usa_affilation <= 5) %>% 
-#   group_by(cluster_id) %>% 
-#   summarise(condition = first(condition),
-#             sum_ncs = sum(ncs_frac_yearsum),
-#             post_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
-#   select(cluster_id, condition, post_move_h_index) 
-# 
-# published_in_first_year_h_index_on_year_prior <- published_in_first_year_fiveyearspost %>% 
-#   left_join(published_in_first_year_matched_dataset) %>%  
-#   filter(years_from_obtaining_usa_affilation < 0) %>% 
-#   group_by(cluster_id) %>% 
-#   summarise(condition = first(condition),
-#             sum_ncs = sum(ncs_frac_yearsum),
-#             pre_move_h_index = 0.54*sqrt(sum_ncs)) %>% 
-#   select(cluster_id, condition, pre_move_h_index)
-# 
-# published_in_first_year_h_index_data <- published_in_first_year_h_index_on_year_prior %>% left_join(published_in_first_year_hindex_at_5years_post) %>% mutate(change_in_hindex = post_move_h_index-pre_move_h_index)
-# published_in_first_year_h_index_data_new <- published_in_first_year_h_index_data %>% pivot_longer(!c(cluster_id,condition, change_in_hindex), names_to = "pre_or_post", values_to = "hindex") %>% mutate(pre_or_post = factor(gsub("_h_index", "",pre_or_post), levels = c("pre_move", "post_move"), labels = c("Pre-move", "Post-move")))
-# 
-# 
-# vioplot(hindex ~ pre_or_post, data = published_in_first_year_h_index_data_new %>% filter(condition == "stayers"), h = 0.1, col = "lightblue", plotCentre = "line", 
-#         side = "left", areaEqual = F, ylab = NULL,ylim = c(0, 4))
-# vioplot(hindex ~ pre_or_post, data = published_in_first_year_h_index_data_new %>% filter(condition == "movers"), h = 0.1, col = "palevioletred", plotCentre = "line", 
-#         side = "right", add = T,areaEqual = F,ylim = c(0, 4))
-# #legend("topleft", fill = c("lightblue", "palevioletred"), legend = c("Premove", "5 years post move"), title = NULL)
-
-
 #descriptive plots for 5-years plot
 
 descriptive_5yearspost_data <- researchers_with_five_years_post_move %>% 
@@ -635,7 +523,7 @@ descriptive_5yearsplot_ncs.plot <- ggplot(descriptive_5yearspost_data, aes( year
   theme(legend.position="bottom",
         legend.title = element_blank()) +
   scale_color_manual(values=c("palevioletred","lightblue")) +
-  ylab("Average (SE) normalised citation score") +
+  ylab("Average (SE) citation score") +
   xlab("Years from move") +
   scale_x_continuous(breaks = seq(-2,5,1))
 
@@ -648,7 +536,7 @@ descriptive_5yearsplot_njs.plot <- ggplot(descriptive_5yearspost_data, aes( year
   theme(legend.position="bottom",
         legend.title = element_blank()) +
   scale_color_manual(values=c("palevioletred","lightblue")) +
-  ylab("Average (SE) normalised journal score") +
+  ylab("Average (SE) journal score") +
   xlab("Years from move") +
   scale_x_continuous(breaks = seq(-2,5,1)) 
 
@@ -674,7 +562,7 @@ descriptive_5yearsplot_topcited.plot <- ggplot(descriptive_5yearspost_data, aes(
   theme(legend.position="bottom",
         legend.title = element_blank()) +
   scale_color_manual(values=c("palevioletred","lightblue")) +
-  ylab("Average (SE) sum of top10% most cited papers") +
+  ylab("Average (SE) sum of top cited papers") +
   xlab("Years from move") +
   scale_x_continuous(breaks = seq(-2,5,1))
 
@@ -752,6 +640,6 @@ violinplot_hindex <- ggplot(h_index_data_new, aes(pre_or_post,hindex, fill = con
   xlab("Pre vs post (5 yrs) move") +
   ylim(0, 2.8)
 
-descriptive_5yearsplot.panelplot <- ggarrange(descriptive_5yearsplot_pubs.plot,descriptive_5yearsplot_ncs.plot,descriptive_5yearsplot_njs.plot,descriptive_5yearsplot_topjournals.plot,descriptive_5yearsplot_topcited.plot,violinplot_hindex, common.legend = T, labels = "AUTO",vjust =1, hjust =-2)
+descriptive_5yearsplot.panelplot <- ggarrange(descriptive_5yearsplot_pubs.plot,descriptive_5yearsplot_ncs.plot,descriptive_5yearsplot_njs.plot,descriptive_5yearsplot_topjournals.plot,descriptive_5yearsplot_topcited.plot,violinplot_hindex, common.legend = T, labels = "AUTO",vjust =-0.0, hjust =-2)
 ggsave(descriptive_5yearsplot.panelplot, filename = "plots/Fig4. 5yearplot_a.pdf")
 
