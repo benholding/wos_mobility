@@ -9,6 +9,15 @@ dim(matched_dataset %>% filter(career_over == F)) #41065 years of actual career
 n_distinct(matched_dataset$cluster_id) #3978 resarchers
 n_distinct(matched_dataset$pair_id) #1989 pairs
 
+movers_dataset_final %>% 
+  filter(pub_year>=move_to_USA_year& pub_year <= move_to_USA_year+2) %>% 
+  mutate(dual_affilation_with_origin_institution = if_else(pub_org_name == origin_institution, 1, 0)) %>% 
+  group_by(cluster_id) %>%  
+  summarise(sum_dual = sum(dual_affilation_with_origin_institution, na.rm=T)) %>% 
+  mutate(categories = if_else(sum_dual ==0, 0,if_else(sum_dual == 1, 1, if_else(sum_dual >1, 2, NA_real_)))) %>% 
+  pull(categories) %>% 
+  table() #code to work out how many people kept their origin affilation after moving.
+
 # Descriptive info about the final matched dataset
 
 matched_dataset %>% distinct(cluster_id, .keep_all = T) %>% filter(condition_numeric == 1) %>%  count(discipline) %>% mutate(individual_n = n*2, for_table = paste0(individual_n, " (", n,")")) %>% select(discipline, for_table) %>%  write.csv("tables/S1_discipline.csv")  #How many matches per discipline

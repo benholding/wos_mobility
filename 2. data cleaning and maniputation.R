@@ -105,13 +105,22 @@ step4 <- step3 %>% #take the step 3 dataset (i.e. only wos covered disciplines)
 
 length(unique(step4$cluster_id)) #at this point we have 178,621 researchers
 length(unique(step3$cluster_id))-length(unique(step4$cluster_id)) #change = 3130
+
+##############################
+# STEP FOUR.5: REMOVING THE MISSING GENDER RESEARCHERS (i used to do this later, but it makes more sense to do it here) #
+##############################
+
+step4.5 <- step4 %>% filter(!is.na(gender)) 
+length(unique(step4.5$cluster_id)) #at this point we have 167014 researchers
+length(unique(step4$cluster_id))-length(unique(step4.5$cluster_id)) #change = 11607
+
 ###################################################################
 # STEP FIVE: MAKING THE FINAL DATASET OF ALL ELIGIBLE RESEARCHERS #
 ###################################################################
 
 # Here I chose a institute which represents the "origin" of the researcher. 
 step5 <- 
-  step4 %>% 
+  step4.5 %>% 
   filter(order_of_publishing == 1) %>% #take the data of everyone at order_of_publishing = 1...
   select(cluster_id, pub_org_name) %>% 
   left_join(publication_list_all, by = c("cluster_id", "pub_org_name")) %>% #... get their publications
@@ -126,7 +135,7 @@ step5 <-
          origin_leiden_ranked = first(if_else(is.na(lr_univ_id), 0, 1))) %>% #new variable: is the origin institute Leiden ranked?
   select(cluster_id, origin_institution, origin_country,origin_leiden_ranked) %>% 
   distinct(cluster_id, .keep_all = T) %>% 
-  left_join(step4, by ="cluster_id") #creates a dataset with information about the authors, including origin info, + each UT (but with no further meta data)
+  left_join(step4.5, by ="cluster_id") #creates a dataset with information about the authors, including origin info, + each UT (but with no further meta data)
   
 final_complete_dataset <- step5 %>% #this becomes the dataset that contains descriptive information about all of our potential matches
   filter(origin_institution == pub_org_name) %>% 
@@ -139,8 +148,8 @@ final_complete_dataset <- step5 %>% #this becomes the dataset that contains desc
   left_join(publication_info %>% select(ut, n_authors, n_countries), by = "ut") %>% #adding number of authors on paper, and number of countries
   mutate(n_coauthors = n_authors - 1) 
 
-length(unique(final_complete_dataset$cluster_id)) #at this point we have 178,621 researchers
-length(unique(publication_list_all$cluster_id))-length(unique(final_complete_dataset$cluster_id)) #total exclusion to "enrollment" = 347271
+length(unique(final_complete_dataset$cluster_id)) #at this point we have 167014 researchers
+length(unique(publication_list_all$cluster_id))-length(unique(final_complete_dataset$cluster_id)) #total exclusion to "enrollment" = 358878
 
 save(final_complete_dataset, file = "eligible_researchers.RData")
 #########################################################################
@@ -162,8 +171,8 @@ save(final_complete_dataset, file = "eligible_researchers.RData")
 # STEP SIX: Find people who moved to the USA and it was their first move #
 ##########################################################################
 
-final_complete_dataset %>% filter(pub_country == "United States") %>% distinct(cluster_id) %>% tally() #9140 people at least once got USA affilation
-length(unique(final_complete_dataset$cluster_id))-9140 # how many non movers
+final_complete_dataset %>% filter(pub_country == "United States") %>% distinct(cluster_id) %>% tally() #8679 people at least once got USA affilation
+length(unique(final_complete_dataset$cluster_id))-8679 # 157874 non movers
 
 step6 <- 
   final_complete_dataset %>% #taking the main dataset
@@ -178,8 +187,8 @@ step6 <-
          USA_lr_univ_id = lr_univ_id) %>% #adding a column stating what the destination is for the researcher
   ungroup()
 
-length(unique(step6$cluster_id)) #7229
-9140-length(unique(step6$cluster_id))
+length(unique(step6$cluster_id)) #6857
+8679-length(unique(step6$cluster_id))
 
 ###############################################################
 # STEP SEVEN: find the people that moved only after two years #
@@ -191,8 +200,8 @@ step7 <- step6 %>% #taking the dataset of researchers who moved to the USA as th
   select(cluster_id, USA_institution, move_to_USA_publication_order = order_of_publishing, move_to_USA_year = pub_year, years_between_starting_and_moving = career_year, USA_lr_univ_id) %>% #i'm selecting and renaming certain columns here to neaten things up
   left_join(final_complete_dataset, by = "cluster_id") #then i reattach all of the publications for each of our researchers which moved at or after month 24 (2 years)
 
-length(unique(step7$cluster_id)) #6426
-length(unique(step6$cluster_id))-length(unique(step7$cluster_id)) #change = 803
+length(unique(step7$cluster_id)) #6115
+length(unique(step6$cluster_id))-length(unique(step7$cluster_id)) #change = 742
 
 ################################################################################################################################
 # STEP EIGHT: Include only people that were still affiliated with their origin institution immediately before moving to the USA #
@@ -204,8 +213,8 @@ step8 <- step7 %>% # so for all of our eligible movers...
   distinct(cluster_id) %>% #for those who pass this criteria I collect their cluster_ids....
   left_join(step7, by ="cluster_id") #... and then get the information from the movers_24_months_min dataset for those cluster_ids.
 
-length(unique(step8$cluster_id)) #5539
-length(unique(step7$cluster_id)) - length(unique(step8$cluster_id)) # change = 887
+length(unique(step8$cluster_id)) #5268
+length(unique(step7$cluster_id)) - length(unique(step8$cluster_id)) # change = 847
 ##############################################################################
 # STEP NINE: Exclude anyone that moved to any other country at the same time #
 ##############################################################################
@@ -220,8 +229,8 @@ step9 <-
   ungroup() %>% 
   select(names(step8))
 
-length(unique(step9$cluster_id)) #5380
-length(unique(step8$cluster_id)) -length(unique(step9$cluster_id)) #change = 159
+length(unique(step9$cluster_id)) #5117
+length(unique(step8$cluster_id)) -length(unique(step9$cluster_id)) #change = 151
 ###############################################################################
 # STEP TEN: Exclude researchers who moved to close to the end of our dataset #
 ###############################################################################
@@ -231,8 +240,8 @@ length(unique(step8$cluster_id)) -length(unique(step9$cluster_id)) #change = 159
 step10 <- step9 %>% 
   filter(move_to_USA_year <= 2016)
 
-length(unique(step10$cluster_id)) #4768
-length(unique(step9$cluster_id)) -length(unique(step10$cluster_id)) #change = 612
+length(unique(step10$cluster_id)) #4533
+length(unique(step9$cluster_id)) -length(unique(step10$cluster_id)) #change = 584
 ######################################################################################
 # STEP ELEVEN: Exclude researchers were at the USA destination for least than 2 years #
 ######################################################################################
@@ -254,8 +263,8 @@ step11 <- step10 %>%
   arrange(cluster_id, order_of_publishing) %>%  #finally i rearrange the publications back into the normal order
   ungroup()
 
-length(unique(step11$cluster_id)) #3102
-length(unique(step10$cluster_id)) -length(unique(step11$cluster_id)) #change = 1666
+length(unique(step11$cluster_id)) #2958
+length(unique(step10$cluster_id)) -length(unique(step11$cluster_id)) #change = 1575
 
 ###############################################################################
 # STEP TWELVE: Exclude researchers who had only one publication at the origin #
@@ -264,18 +273,18 @@ length(unique(step10$cluster_id)) -length(unique(step11$cluster_id)) #change = 1
 step12 <- step11 %>% 
   filter(move_to_USA_publication_order >= 3) 
 
-length(unique(step12$cluster_id)) #2722
-length(unique(step11$cluster_id)) -length(unique(step12$cluster_id)) #change = 380
+length(unique(step12$cluster_id)) #2598
+length(unique(step11$cluster_id)) -length(unique(step12$cluster_id)) #change = 360
 
 ######################################################################
-# STEP THIRTEEN: Exclude researchers with missing gender information #
+# STEP THIRTEEN: Exclude researchers with missing gender information # nb we now do this in step 4.5
 ######################################################################
 
 step13 <- step12 %>% 
   filter(!is.na(gender)) 
 
 length(unique(step13$cluster_id)) #2598
-length(unique(step12$cluster_id)) -length(unique(step13$cluster_id)) #change = 124
+length(unique(step12$cluster_id)) -length(unique(step13$cluster_id)) #change = 0
 
 ######################################################################
 # STEP FOURTEEN: Excluding researchers that take long breaks #
@@ -347,7 +356,7 @@ movers_dataset_final <- step14 %>%
   
 #how many eligible movers to USA do have?
 length(unique(movers_dataset_final$cluster_id)) #2368
-9140-length(unique(movers_dataset_final$cluster_id)) #excluded USA movers = 6772
+8679-length(unique(movers_dataset_final$cluster_id)) #excluded USA movers = 6311
 movers_dataset_final %>% distinct(cluster_id, .keep_all = T) %>% pull(move_to_USA_publication_order) %>% table()
 movers_dataset_final %>% distinct(cluster_id, .keep_all = T) %>% pull(discipline) %>% table()
 table(movers_dataset_final %>% distinct(cluster_id, .keep_all = T) %>% pull(origin_country))  
@@ -377,14 +386,15 @@ researchers_who_moved_anywhere <-
 stayers_dataset <- final_complete_dataset %>% 
   anti_join(researchers_who_moved_anywhere, by = "cluster_id") #these cluster_ids never moved to a new country. We find matches for the movers in these cluster_ids
 
-length(unique(stayers_dataset$cluster_id)) #145313
-(length(unique(final_complete_dataset$cluster_id))-9140)-length(unique(stayers_dataset$cluster_id)) # how many non-movers, after removing non USA, were excluded because they moved to another countries
+length(unique(final_complete_dataset$cluster_id))-8679 #158335
+length(unique(stayers_dataset$cluster_id)) #135739
+(length(unique(final_complete_dataset$cluster_id))-8679)-length(unique(stayers_dataset$cluster_id)) #22596 - how many non-movers, after removing non USA, were excluded because they moved to another countries
 
 stayers_dataset_2 <- stayers_dataset %>% 
   filter(!is.na(gender))
 
 length(unique(stayers_dataset_2$cluster_id)) #135739
-length(unique(stayers_dataset$cluster_id)) -length(unique(stayers_dataset_2$cluster_id)) #9574 matches lost
+length(unique(stayers_dataset$cluster_id)) -length(unique(stayers_dataset_2$cluster_id)) #0 matches lost
 
 stayers_dataset_3 <- stayers_dataset_2 %>% 
   group_by(cluster_id) %>% 
@@ -407,6 +417,7 @@ stayers_dataset_4 <-  anti_join(stayers_dataset_3, problem, by = "cluster_id")
 length(unique(stayers_dataset_4$cluster_id)) #87668
 length(unique(stayers_dataset_3$cluster_id)) -length(unique(stayers_dataset_4$cluster_id)) # 30602 matches lost
 
+135739-(30602+17469+22596)
 #########################################################################################################
 #########################################################################################################
 ######################## MEASURING RESEARCHER PERFORMANCE BY YEAR #######################################
