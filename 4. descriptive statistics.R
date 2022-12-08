@@ -1,5 +1,5 @@
 load("matched_dataset.RData") #for those downloading the code, you should use load("data_to_be_shared.RData") instead 
-pacman::p_load(cowplot, dplyr, vioplot, ggplot2)
+pacman::p_load(cowplot, dplyr, vioplot, ggplot2, tidyr)
 ##################################################
 ############# DESCRIPTIVE STATISTICS #############
 ##################################################
@@ -8,15 +8,15 @@ dim(matched_dataset) #47736 years of data
 dim(matched_dataset %>% filter(career_over == F)) #41065 years of actual career
 n_distinct(matched_dataset$cluster_id) #3978 resarchers
 n_distinct(matched_dataset$pair_id) #1989 pairs
-
-movers_dataset_final %>% 
-  filter(pub_year>=move_to_USA_year& pub_year <= move_to_USA_year+2) %>% 
-  mutate(dual_affilation_with_origin_institution = if_else(pub_org_name == origin_institution, 1, 0)) %>% 
-  group_by(cluster_id) %>%  
-  summarise(sum_dual = sum(dual_affilation_with_origin_institution, na.rm=T)) %>% 
-  mutate(categories = if_else(sum_dual ==0, 0,if_else(sum_dual == 1, 1, if_else(sum_dual >1, 2, NA_real_)))) %>% 
-  pull(categories) %>% 
-  table() #code to work out how many people kept their origin affilation after moving.
+# 
+# movers_dataset_final %>% 
+#   filter(pub_year>=move_to_USA_year& pub_year <= move_to_USA_year+2) %>% 
+#   mutate(dual_affilation_with_origin_institution = if_else(pub_org_name == origin_institution, 1, 0)) %>% 
+#   group_by(cluster_id) %>%  
+#   summarise(sum_dual = sum(dual_affilation_with_origin_institution, na.rm=T)) %>% 
+#   mutate(categories = if_else(sum_dual ==0, 0,if_else(sum_dual == 1, 1, if_else(sum_dual >1, 2, NA_real_)))) %>% 
+#   pull(categories) %>% 
+#   table() #code to work out how many people kept their origin affilation after moving.
 
 # Descriptive info about the final matched dataset
 

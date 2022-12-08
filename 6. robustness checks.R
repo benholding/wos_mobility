@@ -2,9 +2,7 @@
 #robustness checks
 load("matched_dataset.RData") #for those downloading the code, you should use load("data_to_be_shared.RData") instead 
 
-pacman::p_load(sjPlot, cowplot, did, lmerTest, ggpubr, interplot,mediation) #https://cran.r-project.org/web/packages/interplot/vignettes/interplot-vignette.html
-detach("package:dplyr", unload = TRUE)
-library(dplyr)
+pacman::p_load(sjPlot, cowplot, did, lmerTest, ggpubr, interplot,mediation, dplyr) #https://cran.r-project.org/web/packages/interplot/vignettes/interplot-vignette.html
 set.seed(5030)
 
 ################################################################################
@@ -540,7 +538,7 @@ ggexport(robustness_check_firstyear, filename = "plots/S10_robustness_firstyear.
 #######################################################################################
 # check 6, step 1 - getting the models from the "5. analysis.R" script #
 
-#source("3. analysis.R") #i would only run this if you want to run these models below, otherwise just ignore
+source("5. analysis.R") #i would only run this if you want to run these models below, otherwise just ignore
 
 # check 6, step 2 - using the aggte function within the DID package, to estimate differences in ATT by group (in our case this "group" is career age at move) #
 did_model_pfull_group <- aggte(did_model_pfull, type = "group", min_e = -5, max_e = 2)

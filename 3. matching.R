@@ -85,7 +85,7 @@ for_matching_stayers <- researcher_basic_info %>% # take the basic df
 # MATCHING STEP FIVE: The actual matching  #
 ############################################
 
-# so now we have two DFs - 1) movers with performance quantiles & 2) stayers with performance deciles for all months
+# so now we have two DFs - 1) movers with performance quantiles & 2) stayers with performance deciles for all years
 # now we want to match our "movers" with researchers that are similar in the following ways:
 # 1. gender, 
 # 2. origin_country, 
@@ -156,7 +156,7 @@ matched_dataset <- cluster_id_and_pair_id %>%
 ##### *OPTIONAL* MATCHING STEP SEVEN - MAKING A DATASET FOR THE ROBUSTNESS CHECK WHERE INDIVIDUALS ARE ALSO MATCHED ON PRIOR CUMUALTIVE PERFORMANCE UP TO THE POINT JUST BEFORE THE MOVE #######
 ################################################################################################################################################################################################
 
-matched_eligible_robustnesscheck <- robustnesscheck <- matches_basic %>% 
+matched_eligible_robustnesscheck <- matches_basic %>% 
   filter(career_year == year_before_move_movers, #keeping only rows where the year of stayers performance is equal to the time when "movers" left minus 1 year. This removes any "stayer" matches if they weren't active at this timepoint (i.e. quit science)
          final_article_at_origininstitution_year_stayers >= year_before_move_movers, #removes any matches if "stayers" weren't at origin when "mover" had last article before moving
          last_year_stayers-first_year_stayers >= years_between_starting_and_moving_movers+3, #the career length of the "stayers" most be equal to at least 2 years after their match moved to the USA. In this bit of code, I calculate the career length of the stayers, and then make sure it's as long as the "movers'" + 2 years (the code says +3 because the final year in the data refers to the first year of having no publications, so then would allow for a publication gap of at least 2 years)
