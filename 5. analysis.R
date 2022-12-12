@@ -113,6 +113,7 @@ did_plot_grid <- ggarrange(p_full_did_plot,
           common.legend = T, legend = "bottom", ncol=2,nrow=3, labels = "AUTO",hjust=-2)
 
 ggexport(did_plot_grid, filename = "plots/Fig2. DID.pdf")
+
 ## MAKING TABLES OF THE DIFFERENCE-IN-DIFFERENCE RESULTS ##
 # First a table of the relative increases in performance
 ATTs <- c(did_model_pfull_dynamic_short$overall.att,
